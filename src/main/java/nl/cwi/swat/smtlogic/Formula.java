@@ -1,4 +1,3 @@
 package nl.cwi.swat.smtlogic;
 
-public class Formula {
-}
+public interface Formula { }

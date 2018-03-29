@@ -1,4 +1,4 @@
 package nl.cwi.swat.smtlogic;
 
-public class Literal {
+public class Literal extends Expression {
 }

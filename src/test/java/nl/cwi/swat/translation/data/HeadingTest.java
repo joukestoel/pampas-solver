@@ -13,7 +13,7 @@ public class HeadingTest {
     Heading h1 = new Heading.Builder().add("a", IdDomain.ID).add("b", IdDomain.ID).add("c", IdDomain.ID).build();
     Heading h2 = new Heading.Builder().add("d", IdDomain.ID).add("e", IdDomain.ID).add("f", IdDomain.ID).build();
 
-    Heading result = h1.joinedAttributes(h2);
+    Heading result = h1.conjunct(h2);
     assertTrue(result.isEmpty());
   }
 
@@ -22,7 +22,7 @@ public class HeadingTest {
     Heading h1 = new Heading.Builder().add("a", IdDomain.ID).add("b", IdDomain.ID).add("c", IdDomain.ID).build();
     Heading h2 = new Heading.Builder().add("c", IdDomain.ID).add("e", IdDomain.ID).add("f", IdDomain.ID).build();
 
-    Heading joined = h1.joinedAttributes(h2);
+    Heading joined = h1.conjunct(h2);
     assertEquals(new Heading.Builder().add("c", IdDomain.ID).build(), joined);
   }
 
@@ -31,7 +31,7 @@ public class HeadingTest {
     Heading h1 = new Heading.Builder().add("a", IdDomain.ID).add("b", IdDomain.ID).add("c", IdDomain.ID).build();
     Heading h2 = new Heading.Builder().add("c", IdDomain.ID).add("e", IdDomain.ID).add("f", IdDomain.ID).build();
 
-    assertEquals(h1.joinedAttributes(h2), h2.joinedAttributes(h1));
+    assertEquals(h1.conjunct(h2), h2.conjunct(h1));
   }
 
   @Test
@@ -40,6 +40,6 @@ public class HeadingTest {
     Heading h2 = new Heading.Builder().add("b", IdDomain.ID).add("c", IdDomain.ID).add("d", IdDomain.ID).build();
     Heading h3 = new Heading.Builder().add("c", IdDomain.ID).add("d", IdDomain.ID).add("e", IdDomain.ID).build();
 
-    assertEquals(h1.joinedAttributes(h2).joinedAttributes(h3), h1.joinedAttributes(h2.joinedAttributes(h3)));
+    assertEquals(h1.conjunct(h2).conjunct(h3), h1.conjunct(h2.conjunct(h3)));
   }
 }

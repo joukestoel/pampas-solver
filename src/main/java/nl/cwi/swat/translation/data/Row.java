@@ -1,18 +1,96 @@
 package nl.cwi.swat.translation.data;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 
 public abstract class Row {
-    public abstract Cell cellAt(int p);
+  protected boolean stable;
+
+  public abstract Cell cellAt(int p);
+  public abstract Cell[] stableCells();
+  protected abstract Cell[] filter(int[] cellsToFilter);
+  protected abstract Cell[] asArray();
+
+  public boolean isStable() {
+    return this.stable;
+  }
+
+  protected Cell[] filter(int[] cellsToFilter, int nrOfCellsInRow) {
+    Cell[] filtered = new Cell[nrOfCellsInRow - cellsToFilter.length];
+
+    if (filtered.length == 0) {
+      return filtered;
+    }
+
+    int currentIndex = 0;
+    for (int i = 0; i < 2; i++) {
+      boolean remove = false;
+      for (int j = 0; j < cellsToFilter.length; j++) {
+        if (i == cellsToFilter[j]) {
+          remove = true;
+        }
+      }
+
+      if (!remove) {
+        filtered[currentIndex] = cellAt(i);
+        currentIndex++;
+      }
+    }
+
+    return filtered;
+  }
+
+  protected Cell[] empty() {
+    return new Cell[0];
+  }
+
+  public Row append(Row other, int[] cellsToJoinInOther) {
+    Cell[] joinedCells = other.filter(cellsToJoinInOther);
+    if (joinedCells.length == 0) {
+      return this;
+    }
+    return RowFactory.join(this.asArray(), joinedCells);
+  }
+}
+
+class EmptyRow extends Row {
+  public EmptyRow() {
+    this.stable = true;
+  }
+
+  @Override
+  public Cell cellAt(int p) {
+    throw new IndexOutOfBoundsException();
+  }
+
+  @Override
+  public boolean isStable() {
+    return true;
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    return empty();
+  }
+
+  @Override
+  public Cell[] filter(int[] cellsToFilter) {
+    return empty();
+  }
+
+  public Cell[] asArray() {
+    return empty();
+  }
 }
 
 class RowWith1 extends Row {
   private final Cell cell0;
 
-
   RowWith1(Cell cell0) {
     this.cell0 = cell0;
+
+    this.stable = cell0.isStable();
   }
 
   @Override
@@ -23,6 +101,25 @@ class RowWith1 extends Row {
     else {
       throw new IndexOutOfBoundsException();
     }
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    } else {
+      return empty();
+    }
+  }
+
+  @Override
+  public Cell[] filter(int[] cellsToFilter) {
+    return empty();
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0};
   }
 
   @Override
@@ -46,6 +143,8 @@ class RowWith2 extends Row {
   public RowWith2(Cell cell0, Cell cell1) {
     this.cell0 = cell0;
     this.cell1 = cell1;
+
+    this.stable = this.cell0.isStable() && this.cell1.isStable();
   }
 
   @Override
@@ -55,6 +154,30 @@ class RowWith2 extends Row {
       case 1: return cell1;
       default: throw new IndexOutOfBoundsException();
     }
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    }
+
+    Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : null};
+    if (stableCells[0] == null) {
+      return empty();
+    } else {
+      return stableCells;
+    }
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0,cell1};
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,2);
   }
 
   @Override
@@ -82,6 +205,8 @@ class RowWith3 extends Row {
     this.cell0 = cell0;
     this.cell1 = cell1;
     this.cell2 = cell2;
+
+    this.stable = cell0.isStable() && cell1.isStable() && cell2.isStable();
   }
 
   @Override
@@ -93,6 +218,32 @@ class RowWith3 extends Row {
       default: throw new IndexOutOfBoundsException();
     }
   }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    }
+
+    Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : null};
+    if (stableCells[0] == null) {
+      return empty();
+    } else {
+      return stableCells;
+    }
+
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0,cell1,cell2};
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,3);
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -121,6 +272,8 @@ class RowWith4 extends Row {
     this.cell1 = cell1;
     this.cell2 = cell2;
     this.cell3 = cell3;
+
+    this.stable = cell0.isStable() && cell1.isStable() && cell2.isStable() && cell3.isStable();
   }
 
   @Override
@@ -133,6 +286,31 @@ class RowWith4 extends Row {
       default: throw new IndexOutOfBoundsException();
     }
   }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    }
+
+    Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : null};
+    if (stableCells[0] == null) {
+      return empty();
+    } else {
+      return stableCells;
+    }
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0,cell1,cell2,cell3};
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,4);
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -164,6 +342,8 @@ class RowWith5 extends Row {
     this.cell2 = cell2;
     this.cell3 = cell3;
     this.cell4 = cell4;
+
+    this.stable = cell0.isStable() && cell1.isStable() && cell2.isStable() && cell3.isStable() && cell4.isStable();
   }
 
   @Override
@@ -176,6 +356,30 @@ class RowWith5 extends Row {
       case 4: return cell4;
       default: throw new IndexOutOfBoundsException();
     }
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    }
+
+    Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : cell4.isStable() ? cell4 : null};
+    if (stableCells[0] == null) {
+      return empty();
+    } else {
+      return stableCells;
+    }
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0,cell1,cell2,cell3,cell4};
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,5);
   }
 
   @Override
@@ -212,6 +416,8 @@ class RowWith6 extends Row {
     this.cell3 = cell3;
     this.cell4 = cell4;
     this.cell5 = cell5;
+
+    this.stable = cell0.isStable() && cell1.isStable() && cell2.isStable() && cell3.isStable() && cell4.isStable() && cell5.isStable();
   }
 
   @Override
@@ -225,6 +431,30 @@ class RowWith6 extends Row {
       case 5: return cell5;
       default: throw new IndexOutOfBoundsException();
     }
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return asArray();
+    }
+
+    Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : cell4.isStable() ? cell4 : cell5.isStable() ? cell5 : null};
+    if (stableCells[0] == null) {
+      return empty();
+    } else {
+      return stableCells;
+    }
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return new Cell[]{cell0,cell1,cell2,cell3,cell4,cell5};
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,6);
   }
 
   @Override
@@ -242,7 +472,6 @@ class RowWith6 extends Row {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(cell0, cell1, cell2, cell3, cell4, cell5);
   }
 }
@@ -252,6 +481,11 @@ class RowWithN extends Row {
 
   RowWithN(Cell... cells) {
     this.cells = cells;
+
+    this.stable = true;
+    for (int i= 0; i < cells.length; i++) {
+      this.stable &= cells[i].isStable();
+    }
   }
 
   @Override
@@ -261,6 +495,41 @@ class RowWithN extends Row {
     }
 
     return cells[p];
+  }
+
+  @Override
+  public Cell[] stableCells() {
+    if (stable) {
+      return cells;
+    }
+
+    int nrOfStableCells = 0;
+    for (int i = 0; i < cells.length; i++) {
+      if (cells[i].isStable()) {
+        nrOfStableCells++;
+      }
+    }
+
+    Cell[] stableCells = new Cell[nrOfStableCells];
+    int j = 0;
+    for (int i = 0; i < cells.length; i++) {
+      if (cells[i].isStable()) {
+        stableCells[j] = cells[i];
+        j++;
+      }
+    }
+
+    return stableCells;
+  }
+
+  @Override
+  public Cell[] asArray() {
+    return cells;
+  }
+
+  @Override
+  protected Cell[] filter(int[] cellsToFilter) {
+    return filter(cellsToFilter,cells.length);
   }
 
   @Override
@@ -280,6 +549,8 @@ class RowWithN extends Row {
 class RowFactory {
   public static Row build(Cell... cells) {
     switch(cells.length) {
+      case 0:
+        return new EmptyRow();
       case 1:
         return new RowWith1(cells[0]);
       case 2:
@@ -295,5 +566,22 @@ class RowFactory {
       default:
         return new RowWithN(cells);
     }
+  }
+
+  public static Row join(Cell[] left, Cell[] right) {
+    Cell[] joined = new Cell[left.length + right.length];
+    System.arraycopy(left, 0, joined, 0, left.length);
+    System.arraycopy(right, 0, joined, left.length, right.length);
+
+    return build(joined);
+  }
+
+  public static Row build(Map<String,Cell> tuple, Heading heading) {
+    Cell[] row = new Cell[tuple.size()];
+    for (String att : tuple.keySet()) {
+      row[heading.position(att)] = tuple.get(att);
+    }
+
+    return build(row);
   }
 }

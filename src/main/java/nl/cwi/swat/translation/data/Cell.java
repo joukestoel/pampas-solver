@@ -1,5 +1,9 @@
 package nl.cwi.swat.translation.data;
 
+import nl.cwi.swat.ast.Id;
+import nl.cwi.swat.smtlogic.Expression;
+import nl.cwi.swat.smtlogic.Literal;
+
 import java.util.Objects;
 
 public abstract class Cell<T> {
@@ -17,6 +21,8 @@ public abstract class Cell<T> {
     this.value = value;
   }
 
+  public abstract boolean isStable();
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -28,5 +34,39 @@ public abstract class Cell<T> {
   @Override
   public int hashCode() {
     return Objects.hash(value);
+  }
+}
+
+class IdCell extends Cell<Id> {
+  public IdCell(Id id) {
+    super(id);
+  }
+
+  @Override
+  public boolean isStable() {
+    return true;
+  }
+
+}
+
+class LiteralCell extends Cell<Literal> {
+  public LiteralCell(Literal value) {
+    super(value);
+  }
+
+  @Override
+  public boolean isStable() {
+    return true;
+  }
+}
+
+class HoleCell extends Cell<Expression> {
+  public HoleCell(Expression value) {
+    super(value);
+  }
+
+  @Override
+  public boolean isStable() {
+    return false;
   }
 }
