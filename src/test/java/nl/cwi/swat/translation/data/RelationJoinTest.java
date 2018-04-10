@@ -2,12 +2,13 @@ package nl.cwi.swat.translation.data;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import nl.cwi.swat.ast.IdDomain;
+import nl.cwi.swat.ast.relational.IdDomain;
 import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.smtlogic.SimplificationFactory;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class RelationJoinTest {
   private FormulaFactory ffactory;
@@ -15,8 +16,8 @@ public class RelationJoinTest {
 
   @Before
   public void setup() {
-    this.ffactory = new FormulaFactory();
-    this.indexCache = Caffeine.newBuilder().build();
+    this.ffactory = new FormulaFactory(new SimplificationFactory(3, Caffeine.newBuilder().build()));
+    this.indexCache = Caffeine.newBuilder().recordStats().build();
   }
 
   @Test
@@ -33,4 +34,5 @@ public class RelationJoinTest {
 
     assertEquals(3, result.size());
   }
+
 }

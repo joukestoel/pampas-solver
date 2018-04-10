@@ -7,7 +7,7 @@ public class IntSort extends Sort {
   public static final Sort INT = new IntSort();
 
   @Override
-  public Expression newVar(String name) {
-    return new IntVariable(name);
+  public Expression newVar(String name, long label) {
+    return null;
   }
 }

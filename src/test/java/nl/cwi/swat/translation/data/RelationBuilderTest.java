@@ -2,12 +2,13 @@ package nl.cwi.swat.translation.data;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import nl.cwi.swat.ast.Hole;
-import nl.cwi.swat.ast.IdDomain;
+import nl.cwi.swat.ast.relational.Hole;
+import nl.cwi.swat.ast.relational.IdDomain;
 import nl.cwi.swat.ast.ints.IntDomain;
 import nl.cwi.swat.smtlogic.BooleanConstant;
 import nl.cwi.swat.smtlogic.BooleanVariable;
 import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.smtlogic.SimplificationFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ public class RelationBuilderTest {
 
   @Before
   public void setup() {
-    this.ffactory = new FormulaFactory();
+    this.ffactory = new FormulaFactory(new SimplificationFactory(3, Caffeine.newBuilder().build()));
     this.indexCache = Caffeine.newBuilder().build();
   }
 

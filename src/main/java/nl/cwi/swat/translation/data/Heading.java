@@ -1,15 +1,20 @@
 package nl.cwi.swat.translation.data;
 
 import nl.cwi.swat.ast.Domain;
-import nl.cwi.swat.ast.IdDomain;
 
 import java.util.*;
 
 public class Heading {
-  final List<Attribute> attributes;
+  private final List<Attribute> attributes;
+  private final List<String> names;
 
   public Heading(List<Attribute> attributes) {
     this.attributes = attributes;
+    this.names = new ArrayList<>(attributes.size());
+
+    for (Attribute att : this.attributes) {
+      this.names.add(att.name);
+    }
   }
 
   public boolean unionCompatible(Heading other) {
@@ -25,10 +30,6 @@ public class Heading {
   }
 
   public List<String> namesOnly() {
-    List<String> names = new ArrayList<>(attributes.size());
-    for (Attribute att : attributes) {
-      names.add(att.name);
-    }
     return names;
   }
 
@@ -65,6 +66,16 @@ public class Heading {
     }
 
     return new Heading(joinedAtts);
+  }
+
+  public boolean isDisjunct(Heading other) {
+    for (String attName : other.namesOnly()) {
+      if (names.contains(attName)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public void rename(Map<String,String> renamings) {
@@ -118,6 +129,13 @@ public class Heading {
     return Objects.hash(attributes);
   }
 
+  @Override
+  public String toString() {
+    return "Heading{" +
+            "attributes=" + attributes +
+            '}';
+  }
+
   public static class Attribute {
     private final String name;
     private final Domain domain;
@@ -146,8 +164,15 @@ public class Heading {
 
     @Override
     public int hashCode() {
-
       return Objects.hash(name, domain);
+    }
+
+    @Override
+    public String toString() {
+      return "Attribute{" +
+              "name='" + name + '\'' +
+              ", domain=" + domain +
+              '}';
     }
   }
 

@@ -1,4 +1,4 @@
 package nl.cwi.swat.smtlogic;
 
-public class Literal extends Expression {
+public abstract class Literal implements Expression {
 }

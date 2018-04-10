@@ -1,6 +1,6 @@
 package nl.cwi.swat.translation.data;
 
-import nl.cwi.swat.ast.Id;
+import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.smtlogic.Expression;
 import nl.cwi.swat.smtlogic.Literal;
 
@@ -35,6 +35,11 @@ public abstract class Cell<T> {
   public int hashCode() {
     return Objects.hash(value);
   }
+
+  @Override
+  public String toString() {
+    return value.toString();
+  }
 }
 
 class IdCell extends Cell<Id> {
@@ -46,7 +51,6 @@ class IdCell extends Cell<Id> {
   public boolean isStable() {
     return true;
   }
-
 }
 
 class LiteralCell extends Cell<Literal> {

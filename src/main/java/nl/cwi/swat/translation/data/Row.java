@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class Row {
+  public static final Cell[] EMPTY = new Cell[0];
+
   protected boolean stable;
 
   public abstract Cell cellAt(int p);
@@ -41,16 +43,16 @@ public abstract class Row {
     return filtered;
   }
 
-  protected Cell[] empty() {
-    return new Cell[0];
-  }
-
   public Row append(Row other, int[] cellsToJoinInOther) {
     Cell[] joinedCells = other.filter(cellsToJoinInOther);
     if (joinedCells.length == 0) {
       return this;
     }
     return RowFactory.join(this.asArray(), joinedCells);
+  }
+
+  public Row appendAll(Row other) {
+    return RowFactory.join(this.asArray(), other.asArray());
   }
 }
 
@@ -71,16 +73,21 @@ class EmptyRow extends Row {
 
   @Override
   public Cell[] stableCells() {
-    return empty();
+    return EMPTY;
   }
 
   @Override
   public Cell[] filter(int[] cellsToFilter) {
-    return empty();
+    return EMPTY;
   }
 
   public Cell[] asArray() {
-    return empty();
+    return EMPTY;
+  }
+
+  @Override
+  public String toString() {
+    return "<<empty>>";
   }
 }
 
@@ -108,13 +115,13 @@ class RowWith1 extends Row {
     if (stable) {
       return asArray();
     } else {
-      return empty();
+      return EMPTY;
     }
   }
 
   @Override
   public Cell[] filter(int[] cellsToFilter) {
-    return empty();
+    return EMPTY;
   }
 
   @Override
@@ -133,6 +140,11 @@ class RowWith1 extends Row {
   @Override
   public int hashCode() {
     return Objects.hash(cell0);
+  }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + ">" + "(" + stable + ")";
   }
 }
 
@@ -164,7 +176,7 @@ class RowWith2 extends Row {
 
     Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : null};
     if (stableCells[0] == null) {
-      return empty();
+      return EMPTY;
     } else {
       return stableCells;
     }
@@ -194,6 +206,12 @@ class RowWith2 extends Row {
 
     return Objects.hash(cell0, cell1);
   }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + "," + cell1 + ">" + "(" + stable + ")";
+  }
+
 }
 
 class RowWith3 extends Row {
@@ -227,7 +245,7 @@ class RowWith3 extends Row {
 
     Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : null};
     if (stableCells[0] == null) {
-      return empty();
+      return EMPTY;
     } else {
       return stableCells;
     }
@@ -259,6 +277,12 @@ class RowWith3 extends Row {
   public int hashCode() {
     return Objects.hash(cell0, cell1, cell2);
   }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + "," + cell1 + "," + cell2 + ">" + "(" + stable + ")";
+  }
+
 }
 
 class RowWith4 extends Row {
@@ -295,7 +319,7 @@ class RowWith4 extends Row {
 
     Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : null};
     if (stableCells[0] == null) {
-      return empty();
+      return EMPTY;
     } else {
       return stableCells;
     }
@@ -327,6 +351,12 @@ class RowWith4 extends Row {
   public int hashCode() {
     return Objects.hash(cell0, cell1, cell2, cell3);
   }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + "," + cell1 + "," + cell2 + "," + cell3 + ">" + "(" + stable + ")";
+  }
+
 }
 
 class RowWith5 extends Row {
@@ -366,7 +396,7 @@ class RowWith5 extends Row {
 
     Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : cell4.isStable() ? cell4 : null};
     if (stableCells[0] == null) {
-      return empty();
+      return EMPTY;
     } else {
       return stableCells;
     }
@@ -396,9 +426,14 @@ class RowWith5 extends Row {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(cell0, cell1, cell2, cell3, cell4);
   }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + "," + cell1 + "," + cell2 + "," + cell3 + "," + cell4 + ">" + "(" + stable + ")";
+  }
+
 }
 
 class RowWith6 extends Row {
@@ -441,7 +476,7 @@ class RowWith6 extends Row {
 
     Cell[] stableCells = new Cell[]{cell0.isStable() ? cell0 : cell1.isStable() ? cell1 : cell2.isStable() ? cell2 : cell3.isStable() ? cell3 : cell4.isStable() ? cell4 : cell5.isStable() ? cell5 : null};
     if (stableCells[0] == null) {
-      return empty();
+      return EMPTY;
     } else {
       return stableCells;
     }
@@ -473,6 +508,11 @@ class RowWith6 extends Row {
   @Override
   public int hashCode() {
     return Objects.hash(cell0, cell1, cell2, cell3, cell4, cell5);
+  }
+
+  @Override
+  public String toString() {
+    return "<" + cell0 + "," + cell1 + "," + cell2 + "," + cell3 + "," + cell4 + "," + cell5 + ">" + "(" + stable + ")";
   }
 }
 
@@ -544,6 +584,22 @@ class RowWithN extends Row {
   public int hashCode() {
     return Arrays.hashCode(cells);
   }
+
+  @Override
+  public String toString() {
+    String str = "<";
+    for (int i = 0; i < cells.length; i++) {
+      if (i > 0) {
+        str += ",";
+      }
+      str += cells[i];
+    }
+
+    str += ">" + "(" + stable + ")";
+
+    return str;
+  }
+
 }
 
 class RowFactory {

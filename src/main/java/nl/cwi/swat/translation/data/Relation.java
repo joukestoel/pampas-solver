@@ -5,15 +5,23 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.ast.*;
 import nl.cwi.swat.ast.ints.IntDomain;
+import nl.cwi.swat.ast.relational.Hole;
+import nl.cwi.swat.ast.relational.Id;
+import nl.cwi.swat.ast.relational.IdDomain;
 import nl.cwi.swat.smtlogic.BooleanConstant;
 import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.smtlogic.FormulaAccumulator;
 import nl.cwi.swat.smtlogic.FormulaFactory;
 import nl.cwi.swat.smtlogic.ints.IntConstant;
 import nl.cwi.swat.smtlogic.ints.IntSort;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-public class Relation {
+public class Relation implements Iterable<Row> {
+  private static final Logger log = LogManager.getLogger(Relation.class);
+
   private final FormulaFactory ffactory;
   private final Cache<IndexCacheKey,IndexedRows> indexCache;
 
@@ -43,11 +51,19 @@ public class Relation {
   }
 
   public Formula getFormula(Row row) {
+    return this.rows.get(row);
+  }
+
+  public Formula getFormulaOrFalse(Row row) {
     return this.rows.getOrDefault(row, BooleanConstant.FALSE);
   }
 
   public boolean isStable() {
     return this.stableKey.equals(this.heading);
+  }
+
+  public void invalidateCache() {
+    indexCache.invalidateAll();
   }
 
   public boolean isEmpty() { return rows.isEmpty(); }
@@ -57,6 +73,7 @@ public class Relation {
   }
 
   public Relation union(Relation other) {
+    log.trace("Performing union");
     if (!this.heading.unionCompatible(other.heading)) {
       throw new IllegalArgumentException(String.format("Can not perform UNION on %s and %s", this.heading, other.heading));
     }
@@ -101,6 +118,7 @@ public class Relation {
   public Relation difference(Relation other) { throw new UnsupportedOperationException(); }
 
   public Relation join(Relation other) {
+    log.trace("Performing join");
     Heading joinOn = heading.conjunct(other.heading);
 
     if (joinOn.isEmpty()) {
@@ -157,11 +175,63 @@ public class Relation {
     return rowLeft.append(rowRight, rightSideJoinIndices);
   }
 
-  public Relation product(Relation other) { throw new UnsupportedOperationException(); }
+  public Relation product(Relation other) {
+    log.trace("Performing product");
+    Heading newHeading = heading.disjunct(other.heading);
+
+    if (newHeading.arity() != (heading.arity() + other.heading.arity()))  {
+      throw new IllegalArgumentException("PRODUCT only works on relations with distinct attributes");
+    }
+
+    Map.Transient<Row, Formula> newRows = PersistentTrieMap.transientOf();
+    for (Row left : this.rows.keySet()) {
+      for (Row right : other.rows.keySet()) {
+        newRows.__put(left.appendAll(right), ffactory.and(this.rows.get(left), other.rows.get(right)));
+      }
+    }
+
+    return new Relation(newHeading, newRows.freeze(), this.stableKey.disjunct(other.stableKey), ffactory, indexCache);
+  }
 
   public Relation project(List<String> attributes) { throw new UnsupportedOperationException(); }
   public Relation rename(Map<String,String> renamings) { throw new UnsupportedOperationException(); }
   public Relation select() { throw new UnsupportedOperationException(); }
+
+  public Formula subset(Relation other) {
+    log.trace("Performing subset check");
+
+    if (!this.heading.unionCompatible(other.heading)) {
+      throw new IllegalArgumentException(String.format("Can not perform UNION on %s and %s", this.heading, other.heading));
+    }
+
+    if (this.isEmpty()) {
+      return BooleanConstant.TRUE;
+    }
+    else if (other.isEmpty()) {
+      return BooleanConstant.FALSE;
+    } else if (isStable() && other.isStable()) {
+      return stableSubset(other);
+    } else {
+      throw new UnsupportedOperationException("Unstable subset check not yet implemented");
+    }
+  }
+
+  private Formula stableSubset(Relation other) {
+    FormulaAccumulator accumulator = FormulaAccumulator.AND();
+
+    Iterator<Row> iterator = iterator();
+
+    while (iterator.hasNext() && !accumulator.isShortCircuited()) {
+      Row current = iterator.next();
+      accumulator.add(ffactory.or(this.rows.get(current).negation(), other.getFormulaOrFalse(current)));
+    }
+
+    return ffactory.accumulate(accumulator);
+  }
+
+  public Relation singleton(Row row) {
+    return new Relation(this.heading, PersistentTrieMap.of(row, BooleanConstant.TRUE), this.stableKey, this.ffactory, this.indexCache);
+  }
 
   public Relation copy() {
     return new Relation(this.heading,this.rows,this.stableKey,this.ffactory,this.indexCache);
@@ -206,6 +276,20 @@ public class Relation {
     }
 
     return RowFactory.build(cells);
+  }
+
+  @Override
+  public String toString() {
+    return "Relation{" +
+            "heading=" + heading +
+            ", rows=" + rows +
+            ", stableKey=" + stableKey +
+            '}';
+  }
+
+  @Override
+  public Iterator<Row> iterator() {
+    return rows.keyIterator();
   }
 
   public static class IndexedRows {
@@ -337,7 +421,7 @@ public class Relation {
       return this;
     }
 
-    private RelationBuilder add(boolean optional, Object... values) {
+    public RelationBuilder add(boolean optional, Object... values) {
       if (values.length != this.heading.arity()) {
         throw new IllegalArgumentException("Number of supplied values does not correspond with the number of attributes in the relation");
       }

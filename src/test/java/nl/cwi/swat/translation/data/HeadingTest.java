@@ -1,6 +1,6 @@
 package nl.cwi.swat.translation.data;
 
-import nl.cwi.swat.ast.IdDomain;
+import nl.cwi.swat.ast.relational.IdDomain;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
