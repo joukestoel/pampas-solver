@@ -11,7 +11,7 @@ import java.util.Iterator;
 
 @Singleton
 public class SimplificationFactory {
-  private int searchDepth;
+  private int reductionDepth;
   private long label;
 
   private final Map.Transient<Sort, Set.Transient<String>> variables;
@@ -21,8 +21,8 @@ public class SimplificationFactory {
   private Set.Transient<Formula> scratch1 = PersistentTrieSet.transientOf();
   private Set.Transient<Formula> scratch2 = PersistentTrieSet.transientOf();
 
-  public SimplificationFactory(int searchDepth, Cache<FormulaCacheKey, Set.Transient<Formula>> formulaCache) {
-    this.searchDepth = searchDepth;
+  public SimplificationFactory(int reductionDepth, Cache<FormulaCacheKey, Set.Transient<Formula>> formulaCache) {
+    this.reductionDepth = reductionDepth;
     this.label = 0;
     this.formulaCache = formulaCache;
 
@@ -75,6 +75,9 @@ public class SimplificationFactory {
       case 2:
         return reduce(op, it.next(), it.next());
       default: {
+        FormulaCacheKey key = new FormulaCacheKey(accumulator.operator(), accumulator);
+
+        //if (accumulator.size() > reductionDepth)
         //TODO; should check if there is a match in the cache
         return new NaryGate(accumulator, label++);
       }
@@ -116,8 +119,8 @@ public class SimplificationFactory {
       if (low.operator() == operator || high.operator() == operator) {
         scratch1 = PersistentTrieSet.transientOf();
 
-        low.flatten(operator, scratch1, searchDepth - 1);
-        high.flatten(operator, scratch1, searchDepth - 1);
+        low.flatten(operator, scratch1, reductionDepth - 1);
+        high.flatten(operator, scratch1, reductionDepth - 1);
 
         for (Formula gate : cached) {
           if (gate.size() == 2 && gate.input(0) == low && gate.input(1) == high) {
@@ -125,7 +128,7 @@ public class SimplificationFactory {
           }
 
           scratch2 = PersistentTrieSet.transientOf();
-          gate.flatten(operator, scratch2, searchDepth);
+          gate.flatten(operator, scratch2, reductionDepth);
           if (scratch1.equals(scratch2)) {
             return gate;
           }
@@ -195,9 +198,9 @@ public class SimplificationFactory {
     }
 
     final long label = right.label();
-    if (left.contains(left.operator(), label, searchDepth)) {
+    if (left.contains(left.operator(), label, reductionDepth)) {
       return operator == left.operator() ? left : right;
-    } else if (operator == left.operator() && left.contains(operator, -label, searchDepth)) {
+    } else if (operator == left.operator() && left.contains(operator, -label, reductionDepth)) {
       return operator.shortCircuit();
     } else {
       return cache(operator, left, right);
@@ -221,8 +224,8 @@ public class SimplificationFactory {
     scratch1 = PersistentTrieSet.transientOf();
     scratch2 = PersistentTrieSet.transientOf();
 
-    left.flatten(left.operator(), scratch1, searchDepth);
-    right.flatten(right.operator(), scratch2, searchDepth);
+    left.flatten(left.operator(), scratch1, reductionDepth);
+    right.flatten(right.operator(), scratch2, reductionDepth);
 
     for (Formula f : scratch2) {
       if (scratch1.contains(f)) {
@@ -256,8 +259,8 @@ public class SimplificationFactory {
     scratch1 = PersistentTrieSet.transientOf();
     scratch2 = PersistentTrieSet.transientOf();
 
-    left.flatten(left.operator(), scratch1, searchDepth);
-    left.flatten(left.operator(), scratch2, searchDepth);
+    left.flatten(left.operator(), scratch1, reductionDepth);
+    left.flatten(left.operator(), scratch2, reductionDepth);
 
     if (scratch1.size() < scratch2.size() && scratch2.containsAll(scratch1)) {
       return operator == left.operator() ? right : left;
@@ -300,9 +303,9 @@ public class SimplificationFactory {
       throw new IllegalArgumentException("NoX can only be applied to NOT");
     }
 
-    if (left.input(0).contains(operator.complement(), right.label(), searchDepth)) {
+    if (left.input(0).contains(operator.complement(), right.label(), reductionDepth)) {
       return operator.shortCircuit();
-    } else if (left.input(0).contains(operator.complement(), -right.label(), searchDepth)) {
+    } else if (left.input(0).contains(operator.complement(), -right.label(), reductionDepth)) {
       return left;
     } else {
       return cache(operator, left, right);

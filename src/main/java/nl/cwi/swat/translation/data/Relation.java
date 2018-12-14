@@ -114,6 +114,10 @@ public class Relation implements Iterable<Row> {
     return new Relation(heading,biggest.freeze(),stableKey,ffactory,indexCache);
   }
 
+//  private Relation unstableUnion(Relation other) {
+//
+//  }
+
   public Relation intersect(Relation other) { throw new UnsupportedOperationException(); }
   public Relation difference(Relation other) { throw new UnsupportedOperationException(); }
 
@@ -144,11 +148,11 @@ public class Relation implements Iterable<Row> {
     IndexedRows smallest;
     IndexedRows largest;
     if (this.rows.size() > other.rows.size()) {
-      smallest = other.index(joinOn);
       largest = index(joinOn);
+      smallest = other.index(joinOn);
     } else {
-      smallest = index(joinOn);
       largest = other.index(joinOn);
+      smallest = index(joinOn);
     }
 
     Map.Transient<Row,Formula> result = PersistentTrieMap.transientOf();
@@ -157,7 +161,7 @@ public class Relation implements Iterable<Row> {
         for (RowAndConstraint left : smallest.indexedRows.get(key)) {
           for (RowAndConstraint right : largest.indexedRows.get(key)) {
             Row joinedRow = joinRows(left.getRow(), right.getRow(), other.heading, joinOn);
-            result.__put(joinedRow, ffactory.and(left.getConstraint(), right.getConstraint()));
+            result.__put(joinedRow, ffactory.and(left.getExists(), right.getExists()));
           }
         }
       }
@@ -244,7 +248,7 @@ public class Relation implements Iterable<Row> {
       return indexed;
     }
 
-    indexed = new IndexedRows();
+    indexed = new IndexedRows(this.ffactory);
 
     // find positions of fields to index on
     int[] attPos = getAttributePositions(indexOn);
@@ -294,19 +298,29 @@ public class Relation implements Iterable<Row> {
 
   public static class IndexedRows {
     private final Map.Transient<Row, List<RowAndConstraint>> indexedRows;
+    private final FormulaFactory formulaFactory;
 
-    public IndexedRows() {
+    public IndexedRows(FormulaFactory formulaFactory) {
+      this.formulaFactory = formulaFactory;
       this.indexedRows = PersistentTrieMap.transientOf();
     }
 
-    public void add(Row key, Row whole, Formula constraint) {
+    public void add(Row key, Row whole) {
+      add(key, whole, BooleanConstant.TRUE, BooleanConstant.TRUE);
+    }
+
+    public void add(Row key, Row whole, Formula exists) {
+      add(key, whole, exists, BooleanConstant.TRUE);
+    }
+
+    public void add(Row key, Row whole, Formula exists, Formula constraints) {
       List<RowAndConstraint> currentVal = indexedRows.get(key);
       if (currentVal != null) {
         indexedRows.__remove(key);
       } else {
         currentVal = new ArrayList<>();
       }
-      currentVal.add(new RowAndConstraint(whole, constraint));
+      currentVal.add(new RowAndConstraint(whole, exists, constraints, formulaFactory));
       indexedRows.__put(key, currentVal);
     }
 
@@ -318,7 +332,7 @@ public class Relation implements Iterable<Row> {
       Map.Transient<Row,Formula> flattened = PersistentTrieMap.transientOf();
       for (List<RowAndConstraint> rows : indexedRows.values()) {
         for (RowAndConstraint r : rows) {
-          flattened.__put(r.getRow(),r.getConstraint());
+          flattened.__put(r.getRow(),r.getExists());
         }
       }
 
@@ -383,7 +397,7 @@ public class Relation implements Iterable<Row> {
       this.ffactory = ffactory;
       this.indexedRowsCache = indexedRowsCache;
 
-      this.rows = new IndexedRows();
+      this.rows = new IndexedRows(ffactory);
       this.stableKey = heading.copy();
     }
 

@@ -15,6 +15,8 @@ import javax.inject.Singleton;
 @Module
 public class Config {
 
+  private static final int reductionDepth = 1;
+
   @Provides
   @Singleton
   public TranslationCache provideTranslationFormulaCache() {
@@ -29,7 +31,7 @@ public class Config {
   public SimplificationFactory provideSimplificationFactory() {
     Cache<SimplificationFactory.FormulaCacheKey, Set.Transient<Formula>> formulaCache = Caffeine.newBuilder().recordStats().build();
 
-    return new SimplificationFactory(3, formulaCache);
+    return new SimplificationFactory(reductionDepth, formulaCache);
   }
 }
 

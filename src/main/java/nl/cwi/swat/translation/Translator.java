@@ -33,11 +33,9 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     this.cache = cache;
   }
 
-  public void setBaseEnvironment(Environment environment) {
-    this.environment = environment;
-  }
+  public Formula translate(Environment env, Set<nl.cwi.swat.ast.relational.Formula> constraints) {
+    this.environment = env;
 
-  public Formula translate(Set<nl.cwi.swat.ast.relational.Formula> constraints) {
     FormulaAccumulator accumulator = FormulaAccumulator.AND();
     Iterator<nl.cwi.swat.ast.relational.Formula> it = constraints.iterator();
 

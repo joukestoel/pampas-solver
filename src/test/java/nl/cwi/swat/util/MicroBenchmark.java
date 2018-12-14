@@ -33,9 +33,7 @@ public abstract class MicroBenchmark {
     List<Long> times = new ArrayList<>();
 
     for (int i = 0; i < runs; i++) {
-      if (i % (runs / 10) == 0) {
-        System.out.print(".");
-      }
+      System.out.print(".");
 
       beforeRun();
 
@@ -63,9 +61,7 @@ public abstract class MicroBenchmark {
     for (int i = 0; i < warmupRuns; i++) {
       beforeWarmup();
 
-      if (i % (warmupRuns / 10) == 0) {
-        System.out.print(".");
-      }
+      System.out.print(".");
 
       warmup();
 
@@ -83,8 +79,24 @@ public abstract class MicroBenchmark {
             bean.getCurrentThreadCpuTime( ) : 0L;
   }
 
+  private static boolean even(List<?> times) {
+    return even(times.size());
+  }
+
+  private static boolean even(int n) {
+    return n % 2 == 0;
+  }
+
   public static long mean(List<Long> times) {
-    return times.get(times.size() / 2);
+    int middle = times.size() / 2;
+
+    if (even(times)) {
+      // Even number of measurements, mean is between size/2 - 1 and size/2
+      return (times.get(middle - 1) + times.get(middle)) / 2;
+    } else {
+      // Odd number of measurements, mean is size/2
+      return times.get(middle);
+    }
   }
 
   public static long average(List<Long> times) {
@@ -92,7 +104,7 @@ public abstract class MicroBenchmark {
   }
 
   public static long ninetyPercent(List<Long> times) {
-    return times.get(Math.round((times.size() / 100f) * 90f));
+    return times.get((int)((times.size() / 100f) * 90f));
   }
 
   public static long min(List<Long> times) {
@@ -101,6 +113,43 @@ public abstract class MicroBenchmark {
 
   public static long max(List<Long> times) {
     return times.get(times.size()-1);
+  }
+
+  /**
+   * Calculates the first quartile based on the 'TI-83' method.
+   * This means that if the list has a odd number of measurements, the measurement set of the first quartile will NOT include the mean
+   *
+   * @param times - Sorted list of measurements
+   * @return the measurement representing the first quartile bound
+   */
+  public static long firstQuartile(List<Long> times) {
+    if (times.size() < 2) {
+      return times.get(0);
+    }
+
+    int middle = times.size() / 2;
+    int quarter = middle / 2;
+
+    if (even(middle)) {
+      return (times.get(quarter - 1) + times.get(quarter)) / 2;
+    } else {
+      return times.get(quarter); // make use of the default int flooring
+    }
+  }
+
+  public static long thirdQuartile(List<Long> times) {
+    if (times.size() < 2) {
+      return times.get(0);
+    }
+
+    int middle = times.size() / 2;
+    int quarter = middle / 2;
+
+    if (even(middle)) {
+      return (times.get(middle + quarter - 1) + times.get(middle + quarter)) / 2;
+    } else {
+      return times.get(middle + quarter); // make use of the default int flooring
+    }
   }
 
 }
