@@ -8,7 +8,7 @@ import io.usethesource.capsule.Set;
 import nl.cwi.swat.smtlogic.Formula;
 import nl.cwi.swat.smtlogic.SimplificationFactory;
 import nl.cwi.swat.translation.TranslationCache;
-import nl.cwi.swat.translation.data.Relation;
+import nl.cwi.swat.translation.data.relation.Relation;
 
 import javax.inject.Singleton;
 

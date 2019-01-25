@@ -22,4 +22,5 @@ public interface TranslationVisitor <F,R,L> {
   R visit(Declaration decl);
 
   L visit(Id id);
+  L visit(Hole hole);
 }

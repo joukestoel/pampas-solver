@@ -4,10 +4,10 @@ import com.github.benmanes.caffeine.cache.Cache;
 import nl.cwi.swat.ast.relational.Expression;
 import nl.cwi.swat.ast.relational.Node;
 import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.translation.data.Relation;
+import nl.cwi.swat.translation.data.relation.Relation;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Singleton;
-import java.util.Objects;
 import java.util.Optional;
 
 @Singleton
@@ -15,7 +15,7 @@ public class TranslationCache {
   private final Cache<TranslationCacheKey, Formula> formulaCache;
   private final Cache<TranslationCacheKey, Relation> expressionCache;
 
-  public TranslationCache(Cache<TranslationCacheKey, Formula> formulaCache, Cache<TranslationCacheKey, Relation> expressionCache) {
+  public TranslationCache(@NotNull Cache<TranslationCacheKey, Formula> formulaCache, @NotNull Cache<TranslationCacheKey, Relation> expressionCache) {
     this.formulaCache = formulaCache;
     this.expressionCache = expressionCache;
   }
@@ -48,6 +48,10 @@ public class TranslationCache {
     private final Environment env;
 
     public TranslationCacheKey(Node node, Environment env) {
+      if (node == null || env == null) {
+        throw new IllegalArgumentException("Node and environment properties can not be null when creating a new Cache Key");
+      }
+
       this.node = node;
       this.env = env;
     }
@@ -56,14 +60,19 @@ public class TranslationCache {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
+
       TranslationCacheKey that = (TranslationCacheKey) o;
-      return Objects.equals(node, that.node) &&
-              Objects.equals(env, that.env);
+
+      if (!node.equals(that.node)) return false;
+      return env.equals(that.env);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(node, env);
+      int result = node.hashCode();
+      result = 31 * result + env.hashCode();
+      return result;
     }
   }
+
 }

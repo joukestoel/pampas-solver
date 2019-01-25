@@ -2,12 +2,13 @@ package nl.cwi.swat.translation;
 
 import nl.cwi.swat.ast.*;
 import nl.cwi.swat.ast.relational.*;
-import nl.cwi.swat.smtlogic.BooleanConstant;
+//import nl.cwi.swat.ast.relational.Formula;
+import nl.cwi.swat.ast.relational.Literal;
+import nl.cwi.swat.smtlogic.*;
 import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaAccumulator;
-import nl.cwi.swat.smtlogic.FormulaFactory;
-import nl.cwi.swat.translation.data.Relation;
-import nl.cwi.swat.translation.data.Row;
+import nl.cwi.swat.translation.data.relation.Relation;
+import nl.cwi.swat.translation.data.row.Row;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,16 +26,16 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   private final FormulaFactory ffactory;
   private final TranslationCache cache;
 
-  private Environment environment;
+  private Environment env;
 
   @Inject
-  public Translator(FormulaFactory ffactory, TranslationCache cache) {
+  public Translator(@NotNull FormulaFactory ffactory, @NotNull TranslationCache cache) {
     this.ffactory = ffactory;
     this.cache = cache;
   }
 
-  public Formula translate(Environment env, Set<nl.cwi.swat.ast.relational.Formula> constraints) {
-    this.environment = env;
+  public Formula translate(@NotNull Environment env, Set<nl.cwi.swat.ast.relational.Formula> constraints) {
+    this.env = env;
 
     FormulaAccumulator accumulator = FormulaAccumulator.AND();
     Iterator<nl.cwi.swat.ast.relational.Formula> it = constraints.iterator();
@@ -47,8 +48,8 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(Subset subset) {
-    Optional<Formula> cached = cache.fetch(subset, environment);
+  public Formula visit(@NotNull Subset subset) {
+    Optional<Formula> cached = cache.fetch(subset, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -56,17 +57,25 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     Relation left = subset.getLeft().accept(this);
     Relation right = subset.getRight().accept(this);
 
-    return cache.storeAndReturn(subset, environment, left.subset(right));
+    return cache.storeAndReturn(subset, env, left.subset(right));
   }
 
   @Override
-  public Formula visit(Equal equal) {
-    return visit(new And(new Subset(equal.getLeft(),equal.getRight()),new Subset(equal.getRight(), equal.getLeft())));
+  public Formula visit(@NotNull Equal equal) {
+    Optional<Formula> cached = cache.fetch(equal, env);
+    if (cached.isPresent()) {
+      return cached.get();
+    }
+
+    Relation left = equal.getLeft().accept(this);
+    Relation right = equal.getRight().accept(this);
+
+    return cache.storeAndReturn(equal, env, left.equal(right));
   }
 
   @Override
-  public Formula visit(And and) {
-    Optional<Formula> cached = cache.fetch(and, environment);
+  public Formula visit(@NotNull And and) {
+    Optional<Formula> cached = cache.fetch(and, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -77,12 +86,12 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     }
     Formula right = and.getRight().accept(this);
 
-    return cache.storeAndReturn(and, environment, ffactory.and(left,right));
+    return cache.storeAndReturn(and, env, ffactory.and(left,right));
   }
 
   @Override
-  public Formula visit(Or or) {
-    Optional<Formula> cached = cache.fetch(or, environment);
+  public Formula visit(@NotNull Or or) {
+    Optional<Formula> cached = cache.fetch(or, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -93,12 +102,12 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     }
     Formula right = or.getRight().accept(this);
 
-    return cache.storeAndReturn(or, environment, ffactory.or(left,right));
+    return cache.storeAndReturn(or, env, ffactory.or(left,right));
   }
 
   @Override
-  public Formula visit(Forall forall) {
-    Optional<Formula> cached = cache.fetch(forall, environment);
+  public Formula visit(@NotNull Forall forall) {
+    Optional<Formula> cached = cache.fetch(forall, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -106,10 +115,12 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     final FormulaAccumulator accumulator = FormulaAccumulator.AND();
     translateForall(forall.getDecls(), forall.getFormula(), 0, BooleanConstant.FALSE, accumulator);
 
-    return cache.storeAndReturn(forall, environment, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(forall, env, ffactory.accumulate(accumulator));
   }
 
-  private void translateForall(List<Declaration> decls, nl.cwi.swat.ast.relational.Formula formula, int currentDecl, Formula declConstraintValue, FormulaAccumulator accumulator) {
+  private void translateForall(@NotNull List<Declaration> decls, @NotNull nl.cwi.swat.ast.relational.Formula formula,
+                               int currentDecl, @NotNull Formula declConstraintValue,
+                               @NotNull FormulaAccumulator accumulator) {
     if (accumulator.isShortCircuited()) {
       return;
     }
@@ -121,18 +132,18 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
     final Declaration decl = decls.get(currentDecl);
     final Relation declRel = decl.getBinding().accept(this);
-    final Environment origEnv = environment;
+    final Environment origEnv = env;
 
     Iterator<Row> iterator = declRel.iterator();
     while (iterator.hasNext() && !accumulator.isShortCircuited()) {
       Row current = iterator.next();
-      environment = origEnv.extend(decl.getVariable(), declRel.singleton(current));
-      Formula newConstraintVal = ffactory.or(ffactory.not(declRel.getFormula(current)), declConstraintValue);
+      env = origEnv.extend(decl.getVariable(), declRel.asSingleton(current));
+      Formula newConstraintVal = ffactory.or(ffactory.not(declRel.getCombinedConstraints(current)), declConstraintValue);
 
       translateForall(decls, formula, currentDecl + 1, newConstraintVal, accumulator);
     }
 
-    environment = origEnv;
+    env = origEnv;
   }
 
   @Override
@@ -141,8 +152,8 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(Some some) {
-    Optional<Formula> cached = cache.fetch(some, environment);
+  public Formula visit(@NotNull Some some) {
+    Optional<Formula> cached = cache.fetch(some, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -157,26 +168,26 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     FormulaAccumulator accumulator = FormulaAccumulator.OR();
 
     while (it.hasNext() && !accumulator.isShortCircuited()) {
-      accumulator.add(r.getFormula(it.next()));
+      accumulator.add(r.getCombinedConstraints(it.next()));
     }
 
-    return cache.storeAndReturn(some, environment, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(some, env, ffactory.accumulate(accumulator));
   }
 
   @Override
-  public Formula visit(No no) {
-    Optional<Formula> cached = cache.fetch(no, environment);
+  public Formula visit(@NotNull No no) {
+    Optional<Formula> cached = cache.fetch(no, env);
     if (cached.isPresent()) {
       return cached.get();
     }
 
     Formula result = visit(new Some(no.getExpr())).negation();
-    return cache.storeAndReturn(no, environment, result);
+    return cache.storeAndReturn(no, env, result);
   }
 
   @Override
-  public Formula visit(One one) {
-    Optional<Formula> cached = cache.fetch(one, environment);
+  public Formula visit(@NotNull One one) {
+    Optional<Formula> cached = cache.fetch(one, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -191,19 +202,19 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
     Iterator<Row> it = r.iterator();
     while (it.hasNext() && !accumulator.isShortCircuited()) {
-      Formula f = r.getFormula(it.next());
+      Formula f = r.getCombinedConstraints(it.next());
       accumulator.add(ffactory.or(f.negation(), partial.negation()));
       partial = ffactory.or(partial, f);
     }
 
     accumulator.add(partial);
 
-    return cache.storeAndReturn(one, environment, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(one, env, ffactory.accumulate(accumulator));
   }
 
   @Override
-  public Formula visit(Lone lone) {
-    Optional<Formula> cached = cache.fetch(lone, environment);
+  public Formula visit(@NotNull Lone lone) {
+    Optional<Formula> cached = cache.fetch(lone, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -219,17 +230,17 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     Iterator<Row> it = r.iterator();
 
     while (it.hasNext() && !accumulator.isShortCircuited()) {
-      Formula f = r.getFormula(it.next());
+      Formula f = r.getCombinedConstraints(it.next());
       accumulator.add(ffactory.or(f.negation(), partial.negation()));
       partial = ffactory.or(partial, f);
     }
 
-    return cache.storeAndReturn(lone, environment, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(lone, env, ffactory.accumulate(accumulator));
   }
 
   @Override
   public Relation visit(NaturalJoin naturalJoin) {
-    Optional<Relation> cached = cache.fetch(naturalJoin, environment);
+    Optional<Relation> cached = cache.fetch(naturalJoin, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -237,12 +248,12 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     Relation left = naturalJoin.getLeft().accept(this);
     Relation right = naturalJoin.getRight().accept(this);
 
-    return cache.storeAndReturn(naturalJoin, environment, left.join(right));
+    return cache.storeAndReturn(naturalJoin, env, left.naturalJoin(right));
   }
 
   @Override
   public Relation visit(RelVar relVar) {
-    Relation rel = environment.get(relVar.getName());
+    Relation rel = env.get(relVar.getName());
     if (rel == null) {
       throw new IllegalArgumentException(String.format("No relation found with name \'%s\'", relVar.getName()));
     }
@@ -252,7 +263,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
   @Override
   public Relation visit(Product product) {
-    Optional<Relation> cached = cache.fetch(product, environment);
+    Optional<Relation> cached = cache.fetch(product, env);
     if (cached.isPresent()) {
       return cached.get();
     }
@@ -260,7 +271,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     Relation left = product.getLeft().accept(this);
     Relation right = product.getRight().accept(this);
 
-    return cache.storeAndReturn(product, environment, left.product(right));
+    return cache.storeAndReturn(product, env, left.product(right));
   }
 
   @Override
@@ -270,6 +281,11 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
   @Override
   public Literal visit(Id id) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Literal visit(Hole hole) {
     throw new UnsupportedOperationException();
   }
 }

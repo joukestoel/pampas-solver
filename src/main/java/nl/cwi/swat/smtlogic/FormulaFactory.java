@@ -1,38 +1,15 @@
 package nl.cwi.swat.smtlogic;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+public interface FormulaFactory {
+  Formula accumulate(FormulaAccumulator accumulator);
 
-@Singleton
-public class FormulaFactory {
-  private final SimplificationFactory sfactory;
+  Formula and(Formula f1, Formula f2);
 
-  @Inject
-  public FormulaFactory(SimplificationFactory sfactory) {
-    this.sfactory = sfactory;
-  }
+  Formula or(Formula f1, Formula f2);
 
-  public Formula accumulate(FormulaAccumulator accumulator) {
-    return sfactory.reduce(accumulator);
-  }
+  Formula not(Formula f);
 
-  public Formula and(Formula f1, Formula f2) {
-    return sfactory.reduce(Operator.AND, f1, f2);
-  }
+  Formula newBoolVar(String relName);
 
-  public Formula or(Formula f1, Formula f2) {
-    return sfactory.reduce(Operator.OR, f1, f2);
-  }
-
-  public Formula not(Formula f) {
-    return f.negation();
-  }
-
-  public Formula newBoolVar(String relName) {
-    return sfactory.newBoolVar(relName);
-  }
-
-  public Expression newVar(Sort sort, String relName) {
-    return sfactory.newVar(sort, relName);
-  }
+  Expression newVar(Sort sort, String relName);
 }

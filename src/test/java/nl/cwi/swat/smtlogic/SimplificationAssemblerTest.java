@@ -1,15 +1,15 @@
 package nl.cwi.swat.smtlogic;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SimplificationAssemblerTest {
   private SimplificationFactory sfactory;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     sfactory = new SimplificationFactory(3, Caffeine.newBuilder().build());
   }
