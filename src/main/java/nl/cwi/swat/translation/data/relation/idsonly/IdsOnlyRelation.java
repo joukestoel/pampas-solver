@@ -16,7 +16,6 @@ import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 public abstract class IdsOnlyRelation extends AbstractRelation {
@@ -196,7 +195,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   @Override
   public Relation naturalJoin(@NotNull Relation other) {
     java.util.Set<String> joiningFieldNames = heading.intersect(other.getHeading());
-    List<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
+    java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 
     if (joiningFieldNames.isEmpty()) {
       throw new IllegalArgumentException("No fields to perform natural join on");

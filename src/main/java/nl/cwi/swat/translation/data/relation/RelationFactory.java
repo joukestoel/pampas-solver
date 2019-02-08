@@ -155,7 +155,7 @@ public class RelationFactory {
 
     private boolean stable;
     private final Set<String> partialKey;
-    private final List<Integer> partialKeyIndices;
+    private final Set<Integer> partialKeyIndices;
 
     RelationUnderConstruction(@NotNull Heading heading) {
       this(heading, PersistentTrieMap.of(), RelationFactory.this, RelationFactory.this.ff, RelationFactory.this.indexCache);

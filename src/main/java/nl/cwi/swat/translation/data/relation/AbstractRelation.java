@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractRelation implements Relation {
@@ -92,7 +91,7 @@ public abstract class AbstractRelation implements Relation {
     indexed = new IndexedRows();
 
     // find positions of attributes to index on
-    List<Integer> attIndices = heading.getAttributeIndices(indexOn);
+    java.util.Set<Integer> attIndices = heading.getAttributeIndices(indexOn);
 
     for (java.util.Map.Entry<Tuple, Constraint> rac : rows.entrySet()) {
       Tuple key = TupleFactory.buildPartialTuple(rac.getKey(), attIndices);
@@ -123,7 +122,7 @@ public abstract class AbstractRelation implements Relation {
       for (Tuple rhs : other) {
         Constraint rhsCons = other.getRowConstraint(rhs);
 
-        Tuple joinedTuple = TupleFactory.merge(lhs, rhs, Collections.emptyList());
+        Tuple joinedTuple = TupleFactory.merge(lhs, rhs, Collections.emptySet());
         Formula exists = ff.and(lhsCons.exists(), rhsCons.exists());
         Formula attCons = ff.and(lhsCons.attributeConstraints(), rhsCons.attributeConstraints());
 

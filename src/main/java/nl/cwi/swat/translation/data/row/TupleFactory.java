@@ -1,12 +1,10 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.smtlogic.BooleanConstant;
 import nl.cwi.swat.smtlogic.Expression;
-import nl.cwi.swat.smtlogic.Formula;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Factory class that constructs a {@link Tuple}. Contains factory methods to build partial tuples from base tuples
@@ -38,7 +36,7 @@ public class TupleFactory {
    * @return a partial row containing only those attributes from the original iff its original index is contained in the
    *   {@code attributeIndices} list
    */
-  public static Tuple buildPartialTuple(@NotNull final Tuple original, @NotNull final List<Integer> attributeIndices) {
+  public static Tuple buildPartialTuple(@NotNull final Tuple original, @NotNull final Set<Integer> attributeIndices) {
     final Expression[] partialAtts = new Expression[attributeIndices.size()];
 
     int newIndex = 0;
@@ -51,17 +49,17 @@ public class TupleFactory {
   }
 
   /**
-   * Merges two rows in such a way that the attributes of the {@code base} row always are in the merged row and all
-   * the attributes of the {@code other} row of which the indices are not contained in the {@code skipPosition} list are
-   * appended to the end of the base row
+   * Merges two tuples in such a way that the attributes of the {@code base} tuple always are in the beginning of the
+   * merged tuple and all the attributes of the {@code other} tuple of which the indices are not contained in
+   * the {@code skipPosition} list are appended to the end of the base tuple.
    *
-   * @param base the row to use as base
-   * @param other the row that is appended to the base row
-   * @param skipPositions the indices of the attributes that need to be skipped in the other row
-   * @return a merged row containing all the attributes of the base row and the non-skipped attributes of the other row
-   * @throws IllegalArgumentException when the skipPosition list contains indices outside the bounds of the other row
+   * @param base the tuple to use as base
+   * @param other the tuple that is appended to the base row
+   * @param skipPositions the indices of the attributes that need to be skipped in the {@code other} tuple
+   * @return a merged tuple containing all the attributes of the {@code base} tuple and the non-skipped attributes of the {@code other} tuple
+   * @throws IllegalArgumentException when the skipPosition list contains indices outside the bounds of the {@code other} tuple
    */
-  public static Tuple merge(@NotNull final Tuple base, @NotNull final Tuple other, @NotNull List<Integer> skipPositions) {
+  public static Tuple merge(@NotNull final Tuple base, @NotNull final Tuple other, @NotNull Set<Integer> skipPositions) {
     for (int i : skipPositions) {
       if (i < 0 || i >= other.arity()) {
         throw new IllegalArgumentException("List with indices to skip contains indices outside the bounds of the 'other' row");

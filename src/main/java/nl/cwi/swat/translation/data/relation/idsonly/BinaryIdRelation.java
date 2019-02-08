@@ -12,7 +12,6 @@ import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class BinaryIdRelation extends IdsOnlyRelation {
 
             for (TupleAndConstraint ownRac: ownRacs.get()) {
               for (TupleAndConstraint otherRac: otherRacs.get()) {
-                Tuple joinedTuple = TupleFactory.merge(ownRac.getTuple(), otherRac.getTuple(), List.of(0));
+                Tuple joinedTuple = TupleFactory.merge(ownRac.getTuple(), otherRac.getTuple(), Set.of(0));
 
                 if (!rows.containsKey(joinedTuple)) { // already in base relation, no need to add
                   Formula exists = ff.and(ownRac.getConstraint().exists(), otherRac.getConstraint().exists());

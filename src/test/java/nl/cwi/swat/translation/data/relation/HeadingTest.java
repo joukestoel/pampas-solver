@@ -56,7 +56,6 @@ class HeadingTest {
     assertTrue(left.isUnionCompatible(right));
   }
 
-
   @Test
   void twoHeadingOfSameArityButDifferentDomainsAreNotUnionCompatible() {
     Heading left = new Heading(idAtts(2));
@@ -136,7 +135,7 @@ class HeadingTest {
   @Test
   void gettingAttributeIndicesOfExistingAttributesReturnsIndices() {
     Heading heading = new Heading(idAtts(3));
-    assertEquals(List.of(0,2), heading.getAttributeIndices(Set.of("id0","id2")));
+    assertEquals(Set.of(0,2), heading.getAttributeIndices(Set.of("id0","id2")));
   }
 
   @Test

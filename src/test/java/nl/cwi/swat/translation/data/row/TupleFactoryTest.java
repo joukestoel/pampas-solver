@@ -5,7 +5,7 @@ import nl.cwi.swat.smtlogic.IdAtom;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import static nl.cwi.swat.translation.data.row.TupleFactory.buildTuple;
 import static nl.cwi.swat.translation.data.row.TupleFactory.merge;
@@ -54,19 +54,19 @@ class TupleFactoryTest {
 
   @Test
   void partialTupleWhenFilteringEverythingLeavesTheEmptyTuple() {
-    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(1)), Collections.emptyList());
+    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(1)), Collections.emptySet());
     assertEquals(0, tuple.arity());
     assertTrue(tuple instanceof EmptyTuple);
   }
 
   @Test
   void partialTupleWithIndicesOutsideBoundsThrowsException() {
-    assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(1)), List.of(1)));
+    assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(1)), Set.of(1)));
   }
 
   @Test
   void partialTupleTruncatesOriginalTuple() {
-    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(2)), List.of(1));
+    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(2)), Set.of(1));
     assertEquals(1, tuple.arity());
     assertEquals(id("1"), tuple.getAttributeAt(0));
   }
@@ -76,7 +76,7 @@ class TupleFactoryTest {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 
-    Tuple merged = merge(base, other, List.of(0));
+    Tuple merged = merge(base, other, Set.of(0));
     assertEquals(base,merged);
   }
 
@@ -85,7 +85,7 @@ class TupleFactoryTest {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 
-    Tuple merged = merge(base, other, Collections.emptyList());
+    Tuple merged = merge(base, other, Collections.emptySet());
 
     assertEquals(2, merged.arity());
     assertEquals(base.getAttributeAt(0), merged.getAttributeAt(0));
@@ -97,7 +97,7 @@ class TupleFactoryTest {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(2));
 
-    Tuple merged = merge(base, other, List.of(0));
+    Tuple merged = merge(base, other, Set.of(0));
 
     assertEquals(2, merged.arity());
     assertEquals(base.getAttributeAt(0), merged.getAttributeAt(0));
@@ -109,7 +109,7 @@ class TupleFactoryTest {
     Tuple base = buildTuple(atts(0));
     Tuple other = buildTuple(atts(2));
 
-    Tuple merged = merge(base, other, Collections.emptyList());
+    Tuple merged = merge(base, other, Collections.emptySet());
 
     assertEquals(other, merged);
   }
@@ -119,7 +119,7 @@ class TupleFactoryTest {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 
-    assertThrows(IllegalArgumentException.class, () -> merge(base, other, List.of(1)));
+    assertThrows(IllegalArgumentException.class, () -> merge(base, other, Set.of(1)));
   }
 
   private Expression[] atts(int nr) {

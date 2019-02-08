@@ -22,24 +22,30 @@ import java.util.stream.Collectors;
  */
 public class Heading implements Iterable<Attribute> {
   private final List<Attribute> attributes;
-  private Set<Attribute> attributesAsSet;
+  private final Set<Attribute> attributesAsSet;
 
-  private boolean idsOnly;
+  private final boolean idsOnly;
 
   Heading(@NotNull List<Attribute> attributes) {
-    idsOnly = true;
+    this.attributes = Collections.unmodifiableList(attributes);
+    this.attributesAsSet = Collections.unmodifiableSet(new HashSet<>(this.attributes));
 
-    Set<String> attNames = new HashSet<>(attributes.size());
-    for (Attribute fd : attributes) {
-      if (attNames.contains(fd.getName())) {
-        throw new IllegalArgumentException("Attribute names in heading must be distinct");
-      }
-
-      idsOnly = fd.getDomain() == Domain.ID;
-      attNames.add(fd.getName());
+    if (this.attributes.size() != attributesAsSet.size()) {
+      // Some attribute definitions collapse into each other. This means they are not distinct.
+      throw new IllegalArgumentException("Attributes must have distinct names");
     }
 
-    this.attributes = Collections.unmodifiableList(attributes);
+    idsOnly = onlyOfIdDomain(attributes);
+  }
+
+  private boolean onlyOfIdDomain(@NotNull List<Attribute> attributes) {
+    for (Attribute at : attributes) {
+      if (Domain.ID != at.getDomain()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public int arity() {
@@ -51,19 +57,11 @@ public class Heading implements Iterable<Attribute> {
       return false;
     }
 
-    return asSet().equals(other.asSet());
+    return attributesAsSet.equals(other.attributesAsSet);
   }
 
-  private Set<Attribute> asSet() {
-    if (attributesAsSet == null) {
-      attributesAsSet = new HashSet<>(attributes);
-    }
-    return attributesAsSet;
-  }
-
-
-  public List<Integer> getAttributeIndices(@NotNull Set<String> attributeNames) {
-    List<Integer> indices = new ArrayList<>(attributeNames.size());
+  public Set<Integer> getAttributeIndices(@NotNull Set<String> attributeNames) {
+    Set<Integer> indices = new HashSet<>(attributeNames.size());
 
     for (int i = 0; i < attributes.size(); i++) {
       if (attributeNames.contains(attributes.get(i).getName())) {
