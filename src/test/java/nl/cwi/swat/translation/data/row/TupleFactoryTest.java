@@ -7,72 +7,72 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static nl.cwi.swat.translation.data.row.RowFactory.buildTuple;
-import static nl.cwi.swat.translation.data.row.RowFactory.merge;
+import static nl.cwi.swat.translation.data.row.TupleFactory.buildTuple;
+import static nl.cwi.swat.translation.data.row.TupleFactory.merge;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TupleFactoryTest {
 
   @Test
-  void buildZeroArityRow() {
+  void emptyTuple() {
     assertEquals(0, buildTuple().arity());
   }
 
   @Test
-  void buildUnaryRow() {
+  void buildUnaryTuple() {
     assertEquals(1, buildTuple(atts(1)).arity());
   }
 
   @Test
-  void buildBinaryRow() {
+  void buildBinaryTuple() {
     assertEquals(2, buildTuple(atts(2)).arity());
   }
 
   @Test
-  void buildTenaryRow() {
+  void buildTernaryTuple() {
     assertEquals(3, buildTuple(atts(3)).arity());
   }
 
   @Test
-  void buildFourAttributeRow() {
+  void buildFourAttributesTuple() {
     assertEquals(4, buildTuple(atts(4)).arity());
   }
 
   @Test
-  void buildFiveAttributeRow() {
+  void buildFiveAttributesTuple() {
     assertEquals(5, buildTuple(atts(5)).arity());
   }
 
   @Test
-  void buildMoreTHenFiveAttributeRows() {
+  void buildMoreTHenFiveAttributesTuples() {
     for (int i = 6; i < 20; i++) {
       Tuple tuple = buildTuple(atts(i));
       assertEquals(i, tuple.arity());
-      assertTrue(tuple instanceof NAttributeTuple);
+      assertTrue(tuple instanceof NaryTuple);
     }
   }
 
   @Test
-  void buildingPartialRowWhenFilteringEverythingLeavesTheEmptyRow() {
-    Tuple tuple = RowFactory.buildPartialTuple(buildTuple(atts(1)), Collections.emptyList());
+  void partialTupleWhenFilteringEverythingLeavesTheEmptyTuple() {
+    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(1)), Collections.emptyList());
     assertEquals(0, tuple.arity());
     assertTrue(tuple instanceof EmptyTuple);
   }
 
   @Test
-  void buildingPartialRowWithIndicesOutsideBoundsThrowsException() {
-    assertThrows(IllegalArgumentException.class, () -> RowFactory.buildPartialTuple(buildTuple(atts(1)), List.of(1)));
+  void partialTupleWithIndicesOutsideBoundsThrowsException() {
+    assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(1)), List.of(1)));
   }
 
   @Test
-  void buildingPartialRowTruncatesOriginalRow() {
-    Tuple tuple = RowFactory.buildPartialTuple(buildTuple(atts(2)), List.of(1));
+  void partialTupleTruncatesOriginalTuple() {
+    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(2)), List.of(1));
     assertEquals(1, tuple.arity());
     assertEquals(id("1"), tuple.getAttributeAt(0));
   }
 
   @Test
-  void mergingRowsWhenSkippingAllAttributesResultsInBaseRow() {
+  void mergingTupleWhenSkippingAllAttributesResultsInBaseTuple() {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 
@@ -81,7 +81,7 @@ class TupleFactoryTest {
   }
 
   @Test
-  void mergingRowsWithoutSkippingAttributesResultsInARowCombiningAllAttributes() {
+  void mergingTuplesWithoutSkippingAttributesResultsInATupleCombiningAllAttributes() {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 
@@ -93,7 +93,7 @@ class TupleFactoryTest {
   }
 
   @Test
-  void mergingRowsWithSkippingFirstAttributeResultsInARowWithoutThatAttribute() {
+  void mergingTuplesWithSkippingFirstAttributeResultsInATupleWithoutThatAttribute() {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(2));
 
@@ -105,7 +105,7 @@ class TupleFactoryTest {
   }
 
   @Test
-  void mergingAnEmptyBaseRowWithoutSkippingResultsInOther() {
+  void mergingAnEmptyBaseTupleWithoutSkippingResultsInTheOtherTuple() {
     Tuple base = buildTuple(atts(0));
     Tuple other = buildTuple(atts(2));
 
@@ -115,7 +115,7 @@ class TupleFactoryTest {
   }
 
   @Test
-  void mergingRowsWithAttributesToSkipIndicesOutsideBoundsResultsInException() {
+  void mergingTuplesWithAttributesToSkipIndicesOutsideBoundsResultsInException() {
     Tuple base = buildTuple(atts(1));
     Tuple other = buildTuple(atts(1));
 

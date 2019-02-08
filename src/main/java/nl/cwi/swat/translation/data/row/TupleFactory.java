@@ -9,35 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Factory class that constructs {@link Tuple}. Contains factory methods to build partial rows and methods to merge two
- * rows together.
+ * Factory class that constructs a {@link Tuple}. Contains factory methods to build partial tuples from base tuples
+ * and methods to merge two tuples together.
  */
-public class RowFactory {
-  public static final Constraint ALL_TRUE = new Constraint() {
-    @Override
-    public Formula exists() {
-      return BooleanConstant.TRUE;
-    }
-
-    @Override
-    public Formula attributeConstraints() {
-      return BooleanConstant.TRUE;
-    }
-
-    @Override
-    public Formula combined() {
-      return BooleanConstant.TRUE;
-    }
-  };
-
-  public static Constraint buildRowConstraint(@NotNull final Formula exists) {
-    return new Constraint.ExistsOnlyConstraint(exists);
-  }
-
-  public static Constraint buildRowConstraint(@NotNull final Formula exists, @NotNull final Formula attributeConstraints) {
-    return new Constraint.FullConstraint(exists, attributeConstraints);
-  }
-
+public class TupleFactory {
   /**
    * Builds a row of arity {@code attributes.length} containing the {@code attributes}
    * @param attributes an array of the attributes that are part of the new row
@@ -51,7 +26,7 @@ public class RowFactory {
       case 3: return new TernaryTuple(attributes[0], attributes[1], attributes[2]);
       case 4: return new FourAttributesTuple(attributes[0], attributes[1], attributes[2], attributes[3]);
       case 5: return new FiveAttributesTuple(attributes[0], attributes[1], attributes[2], attributes[3], attributes[4]);
-      default: return new NAttributeTuple(attributes);
+      default: return new NaryTuple(attributes);
     }
   }
 

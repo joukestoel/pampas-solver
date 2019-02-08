@@ -2,11 +2,11 @@ package nl.cwi.swat.translation.data.row;
 
 import org.jetbrains.annotations.NotNull;
 
-public class RowAndConstraint {
+public class TupleAndConstraint {
   private final Tuple tuple;
   private final Constraint constraint;
 
-  public RowAndConstraint(@NotNull Tuple tuple, @NotNull Constraint constraint) {
+  public TupleAndConstraint(@NotNull Tuple tuple, @NotNull Constraint constraint) {
     this.tuple = tuple;
     this.constraint = constraint;
   }
@@ -24,7 +24,7 @@ public class RowAndConstraint {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    RowAndConstraint that = (RowAndConstraint) o;
+    TupleAndConstraint that = (TupleAndConstraint) o;
 
     if (!tuple.equals(that.tuple)) return false;
     return constraint.equals(that.constraint);

@@ -9,159 +9,159 @@ import static org.junit.jupiter.api.Assertions.*;
 class TupleTest {
 
   @Test
-  void zeroAttributesRowHasZeroLength() {
+  void zeroAttributesTupleHasZeroLength() {
     assertEquals(0, create(0).arity());
   }
 
   @Test
-  void zeroAttributesRowCanBeIterated() {
+  void zeroAttributesTupleCanBeIterated() {
     checkIterable(create(0), 0);
   }
 
   @Test
-  void cantGetAttributesOfZeroAttributesRow() {
+  void cantGetAttributesOfZeroAttributesTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(0).getAttributeAt(0));
   }
 
   @Test
-  void twoZeroRowsMustBeEqual() {
+  void twoZeroTuplesMustBeEqual() {
     assertEquals(create(0),create(0));
   }
 
   @Test
-  void oneAttributeRowIsOfSizeOne() {
+  void unaryTupleIsOfSizeOne() {
     assertEquals(1, create(1).arity());
   }
 
   @Test
-  void oneAttributeRowCanBeIterated() {
+  void unaryTupleCanBeIterated() {
     checkIterable(create(1),1);
   }
 
   @Test
-  void canGetFirstAttributeOfAOneAttributeRow() {
+  void canGetFirstAttributeOfAUnaryTuple() {
     assertEquals(id("0"), create(1).getAttributeAt(0));
   }
 
   @Test
-  void noSecondAttributeInAOneAttributeRow() {
+  void noSecondAttributeInAUnaryTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(1).getAttributeAt(1));
   }
 
   @Test
-  void twoOneAttributeRowsContainingSameDataAreEqual() {
+  void twoUnaryTuplesContainingSameDataAreEqual() {
     assertEquals(create(1),create(1));
   }
 
   @Test
-  void twoOneAttributeRowsContainingDifferentDataAreNotEqual() {
+  void twoUnaryTuplesContainingDifferentDataAreNotEqual() {
     assertNotEquals(create(1),create(id("a'")));
   }
 
   @Test
-  void rowsOfDifferentSizesAreNotEqual() {
+  void tuplessOfDifferentSizesAreNotEqual() {
     for (int i = 0; i < 6; i++) {
       assertNotEquals(create(i), create(i + 1));
     }
   }
 
   @Test
-  void twoAttributeRowIsOfSizeTwo() {
+  void binaryTupleIsOfSizeTwo() {
     assertEquals(2, create(2).arity());
   }
 
   @Test
-  void twoAttributeRowContainsTwoAttributes() {
+  void binaryTupleContainsTwoAttributes() {
     checkIterable(create(2),2);
   }
 
   @Test
-  void twoAttributesRowKeepsOrder() {
+  void binaryTupleIsOrdered() {
     checkOrder(create(2));
   }
 
   @Test
-  void noMoreAttributesInTwoAttributesRow() {
+  void noMoreAttributesInBinaryTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(2).getAttributeAt(2));
   }
 
   @Test
-  void threeAttributeRowIsOfSizeThree() {
+  void ternaryTupleIsOfSizeThree() {
     assertEquals(3, create(3).arity());
   }
 
   @Test
-  void threeAttributeRowContainsThreeAttributes() {
+  void ternaryTupleContainsThreeAttributes() {
     checkIterable(create(3),3);
   }
 
   @Test
-  void threeAttributesRowKeepsOrder() {
+  void ternaryTupleIsOrdered() {
     checkOrder(create(3));
   }
 
   @Test
-  void noMoreAttributesInThreeAttributesRow() {
+  void noMoreAttributesInTernaryTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(3).getAttributeAt(3));
   }
 
   @Test
-  void fourAttributeRowIsOfSizeThree() {
+  void fourAttributeTupleIsOfSizeFour() {
     assertEquals(4, create(4).arity());
   }
 
   @Test
-  void fourAttributeRowContainsThreeAttributes() {
+  void fourAttributeTupleContainsFourAttributes() {
     checkIterable(create(4),4);
   }
 
   @Test
-  void fourAttributesRowKeepsOrder() {
+  void fourAttributeTupleeIsOrdered() {
     checkOrder(create(4));
   }
 
   @Test
-  void noMoreAttributesInFourAttributesRow() {
+  void noMoreAttributesInFourAttributesTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(4).getAttributeAt(4));
   }
 
   @Test
-  void fiveAttributeRowIsOfSizeThree() {
+  void fiveAttributeTupleIsOfSizeFive() {
     assertEquals(5, create(5).arity());
   }
 
   @Test
-  void fiveAttributeRowContainsThreeAttributes() {
+  void fiveAttributeTupleContainsFiveAttributes() {
     checkIterable(create(5),5);
   }
 
   @Test
-  void fiveAttributesRowKeepsOrder() {
+  void fiveAttributesTupleIsOrdered() {
     checkOrder(create(5));
   }
 
   @Test
-  void noMoreAttributesInFiveAttributesRow() {
+  void noMoreAttributesInFiveAttributesTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(5).getAttributeAt(5));
   }
 
   @Test
-  void twentyAttributeRowIsOfSizeTwenty() {
+  void naryTupleCanBeOfSizeTwenty() {
     assertEquals(20, create(20).arity());
   }
 
   @Test
-  void twentyAttributeRowContainsTwentyAttributes() {
+  void naryTupleCanContainTwentyAttributes() {
     checkIterable(create(20),20);
   }
 
   @Test
-  void twentyAttributesRowKeepsOrder() {
+  void naryTupleIsOrdered() {
     checkOrder(create(20));
   }
 
   @Test
-  void noMoreAttributesInTwentyAttributesRow() {
+  void noMoreAttributesInNaryTuple() {
     assertThrows(IllegalArgumentException.class, () -> create(20).getAttributeAt(20));
   }
 
@@ -188,7 +188,7 @@ class TupleTest {
       case 3: return new TernaryTuple(atts[0],atts[1],atts[2]);
       case 4: return new FourAttributesTuple(atts[0],atts[1],atts[2],atts[3]);
       case 5: return new FiveAttributesTuple(atts[0],atts[1],atts[2],atts[3],atts[4]);
-      default:return new NAttributeTuple(atts);
+      default:return new NaryTuple(atts);
     }
   }
 

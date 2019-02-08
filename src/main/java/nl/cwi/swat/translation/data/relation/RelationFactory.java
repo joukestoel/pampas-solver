@@ -14,10 +14,7 @@ import nl.cwi.swat.smtlogic.ints.IntConstant;
 import nl.cwi.swat.smtlogic.ints.IntSort;
 import nl.cwi.swat.translation.data.relation.idsonly.BinaryIdRelation;
 import nl.cwi.swat.translation.data.relation.idsonly.UnaryIdRelation;
-import nl.cwi.swat.translation.data.row.Tuple;
-import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.Constraint;
-import nl.cwi.swat.translation.data.row.RowFactory;
+import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -107,14 +104,14 @@ public class RelationFactory {
       }
 
       public TupleBuilder lower(@NotNull Literal... values) {
-        Tuple r = RowFactory.buildTuple(convertToExpressions(values));
+        Tuple r = TupleFactory.buildTuple(convertToExpressions(values));
         rel.add(r, BooleanConstant.TRUE);
 
         return this;
       }
 
       public TupleBuilder upper(@NotNull Literal... values) {
-        Tuple r = RowFactory.buildTuple(convertToExpressions(values));
+        Tuple r = TupleFactory.buildTuple(convertToExpressions(values));
         rel.add(r, ff.newBoolVar(Builder.this.relName));
 
         return this;
@@ -197,25 +194,25 @@ public class RelationFactory {
         throw new IllegalArgumentException("Tuple to be added is not compatible with relation");
       }
 
-      Tuple key = RowFactory.buildPartialTuple(tuple, partialKeyIndices);
-      Optional<io.usethesource.capsule.Set.Transient<RowAndConstraint>> existingRows = indexedRows.get(key);
+      Tuple key = TupleFactory.buildPartialTuple(tuple, partialKeyIndices);
+      Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> existingRows = indexedRows.get(key);
 
       if (!existingRows.isPresent()) {
         // tuple (or partial tuple) does not yet exists, can be safely added
-        indexedRows.add(key, tuple, RowFactory.buildRowConstraint(exists));
+        indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists));
       } else {
         // partial tuple does already exist, tuples could potentially collapse into each other, add constraints to prevent this
-        indexedRows.add(key, tuple, RowFactory.buildRowConstraint(exists, constraintAttributes(tuple, existingRows.get())));
+        indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists, constraintAttributes(tuple, existingRows.get())));
 
         // flip the stable property. Since overlap is possible this is not a stable relation anymore
         stable = false;
       }
     }
 
-    private Formula constraintAttributes(Tuple toBeAdded, Set<RowAndConstraint> overlappingRows) {
+    private Formula constraintAttributes(Tuple toBeAdded, Set<TupleAndConstraint> overlappingRows) {
       FormulaAccumulator outerAnd = FormulaAccumulator.AND();
 
-      for (RowAndConstraint rac : overlappingRows) {
+      for (TupleAndConstraint rac : overlappingRows) {
         // Build a and gate constraining all the attributes to be equal
         FormulaAccumulator innerAnd = FormulaAccumulator.AND();
         for (int i = 0; i < toBeAdded.arity(); i++) {

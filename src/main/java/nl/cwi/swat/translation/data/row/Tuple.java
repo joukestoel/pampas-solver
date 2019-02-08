@@ -393,10 +393,10 @@ class FiveAttributesTuple extends AbstractTuple {
   }
 }
 
-class NAttributeTuple extends AbstractTuple {
+class NaryTuple extends AbstractTuple {
   private final Expression[] atts;
 
-  NAttributeTuple(@NotNull Expression[] atts) {
+  NaryTuple(@NotNull Expression[] atts) {
     this.atts = atts;
   }
 
@@ -419,7 +419,7 @@ class NAttributeTuple extends AbstractTuple {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    NAttributeTuple that = (NAttributeTuple) o;
+    NaryTuple that = (NaryTuple) o;
 
     return Arrays.equals(atts, that.atts);
   }

@@ -10,10 +10,7 @@ import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Tuple;
-import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.Constraint;
-import nl.cwi.swat.translation.data.row.RowFactory;
+import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -59,19 +56,19 @@ public class UnaryIdRelation extends IdsOnlyRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple current : rows.keySet()) {
-      Optional<Set.Transient<RowAndConstraint>> joiningRows = indexedOtherRows.get(current);
+      Optional<Set.Transient<TupleAndConstraint>> joiningRows = indexedOtherRows.get(current);
 
       if (joiningRows.isPresent()) {
         Constraint rc = rows.get(current);
         Formula exists = rc.exists();
         Formula attCons = rc.attributeConstraints();
 
-        for (RowAndConstraint joiningRow : joiningRows.get()) {
-          Tuple joinedTuple = RowFactory.merge(current, joiningRow.getTuple(), indicesOfJoinedFields);
+        for (TupleAndConstraint joiningRow : joiningRows.get()) {
+          Tuple joinedTuple = TupleFactory.merge(current, joiningRow.getTuple(), indicesOfJoinedFields);
           exists = ff.and(exists, joiningRow.getConstraint().exists());
           attCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());
 
-          result.put(joinedTuple, RowFactory.buildRowConstraint(exists,attCons));
+          result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
         }
       }
     }

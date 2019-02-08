@@ -8,10 +8,7 @@ import nl.cwi.swat.smtlogic.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Tuple;
-import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.Constraint;
-import nl.cwi.swat.translation.data.row.RowFactory;
+import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -50,16 +47,16 @@ public class BinaryIdRelation extends IdsOnlyRelation {
       Map.Transient<Tuple, Constraint> currentIt = PersistentTrieMap.transientOf();
 
       for (Tuple key : base) {
-        Optional<io.usethesource.capsule.Set.Transient<RowAndConstraint>> ownRacs = base.get(key);
+        Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> ownRacs = base.get(key);
 
         if (ownRacs.isPresent()) {
-          Optional<io.usethesource.capsule.Set.Transient<RowAndConstraint>> otherRacs = indexedFrom.get(key);
+          Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> otherRacs = indexedFrom.get(key);
 
           if (otherRacs.isPresent()) {
 
-            for (RowAndConstraint ownRac: ownRacs.get()) {
-              for (RowAndConstraint otherRac: otherRacs.get()) {
-                Tuple joinedTuple = RowFactory.merge(ownRac.getTuple(), otherRac.getTuple(), List.of(0));
+            for (TupleAndConstraint ownRac: ownRacs.get()) {
+              for (TupleAndConstraint otherRac: otherRacs.get()) {
+                Tuple joinedTuple = TupleFactory.merge(ownRac.getTuple(), otherRac.getTuple(), List.of(0));
 
                 if (!rows.containsKey(joinedTuple)) { // already in base relation, no need to add
                   Formula exists = ff.and(ownRac.getConstraint().exists(), otherRac.getConstraint().exists());
@@ -68,7 +65,7 @@ public class BinaryIdRelation extends IdsOnlyRelation {
                     exists = ff.or(currentIt.get(joinedTuple).exists(), exists);
                   }
 
-                  currentIt.put(joinedTuple, RowFactory.buildRowConstraint(exists));
+                  currentIt.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists));
                   changed = true;
                 }
 

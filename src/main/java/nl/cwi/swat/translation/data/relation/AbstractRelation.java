@@ -7,10 +7,7 @@ import io.usethesource.capsule.core.PersistentTrieMap;
 import io.usethesource.capsule.core.PersistentTrieSet;
 import nl.cwi.swat.smtlogic.Formula;
 import nl.cwi.swat.smtlogic.FormulaFactory;
-import nl.cwi.swat.translation.data.row.Tuple;
-import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.Constraint;
-import nl.cwi.swat.translation.data.row.RowFactory;
+import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -20,7 +17,7 @@ import java.util.Optional;
 
 public abstract class AbstractRelation implements Relation {
   protected final Map.Immutable<Tuple, Constraint> rows;
-  protected final Cache<IndexCacheKey,IndexedRows> indexCache;
+  private final Cache<IndexCacheKey,IndexedRows> indexCache;
 
   protected final Heading heading;
   protected final FormulaFactory ff;
@@ -98,7 +95,7 @@ public abstract class AbstractRelation implements Relation {
     List<Integer> attIndices = heading.getAttributeIndices(indexOn);
 
     for (java.util.Map.Entry<Tuple, Constraint> rac : rows.entrySet()) {
-      Tuple key = RowFactory.buildPartialTuple(rac.getKey(), attIndices);
+      Tuple key = TupleFactory.buildPartialTuple(rac.getKey(), attIndices);
       indexed.add(key, rac.getKey(), rac.getValue());
     }
 
@@ -126,11 +123,11 @@ public abstract class AbstractRelation implements Relation {
       for (Tuple rhs : other) {
         Constraint rhsCons = other.getRowConstraint(rhs);
 
-        Tuple joinedTuple = RowFactory.merge(lhs, rhs, Collections.emptyList());
+        Tuple joinedTuple = TupleFactory.merge(lhs, rhs, Collections.emptyList());
         Formula exists = ff.and(lhsCons.exists(), rhsCons.exists());
         Formula attCons = ff.and(lhsCons.attributeConstraints(), rhsCons.attributeConstraints());
 
-        result.put(joinedTuple, RowFactory.buildRowConstraint(exists, attCons));
+        result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists, attCons));
       }
     }
 
@@ -165,14 +162,14 @@ public abstract class AbstractRelation implements Relation {
   }
 
   public class IndexedRows implements Iterable<Tuple> {
-    private final Map.Transient<Tuple, Set.Transient<RowAndConstraint>> indexedRows;
+    private final Map.Transient<Tuple, Set.Transient<TupleAndConstraint>> indexedRows;
 
     IndexedRows() {
       this.indexedRows = PersistentTrieMap.transientOf();
     }
 
     public void add(@NotNull Tuple key, @NotNull Tuple whole, @NotNull Constraint rc) {
-      Set.Transient<RowAndConstraint> currentVal = indexedRows.get(key);
+      Set.Transient<TupleAndConstraint> currentVal = indexedRows.get(key);
 
       if (currentVal != null) {
         indexedRows.remove(key);
@@ -180,13 +177,13 @@ public abstract class AbstractRelation implements Relation {
         currentVal = PersistentTrieSet.transientOf();
       }
 
-      currentVal.add(new RowAndConstraint(whole, rc));
+      currentVal.add(new TupleAndConstraint(whole, rc));
 
       indexedRows.put(key, currentVal);
     }
 
-    public Optional<Set.Transient<RowAndConstraint>> get(@NotNull Tuple tuple) {
-      Set.Transient<RowAndConstraint> subrows = indexedRows.get(tuple);
+    public Optional<Set.Transient<TupleAndConstraint>> get(@NotNull Tuple tuple) {
+      Set.Transient<TupleAndConstraint> subrows = indexedRows.get(tuple);
       return subrows != null ? Optional.of(subrows) : Optional.empty();
     }
 
@@ -194,11 +191,11 @@ public abstract class AbstractRelation implements Relation {
       return indexedRows.size();
     }
 
-    protected Map.Immutable<Tuple, Constraint> flatten() {
+    Map.Immutable<Tuple, Constraint> flatten() {
       Map.Transient<Tuple, Constraint> flattened = PersistentTrieMap.transientOf();
 
-      for (Set<RowAndConstraint> rows : indexedRows.values()) {
-        for (RowAndConstraint rac : rows) {
+      for (Set<TupleAndConstraint> rows : indexedRows.values()) {
+        for (TupleAndConstraint rac : rows) {
           flattened.put(rac.getTuple(),rac.getConstraint());
         }
       }

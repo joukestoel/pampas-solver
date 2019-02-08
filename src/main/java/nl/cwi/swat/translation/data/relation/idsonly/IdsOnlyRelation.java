@@ -4,15 +4,15 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieMap;
-import nl.cwi.swat.smtlogic.*;
+import nl.cwi.swat.smtlogic.BooleanConstant;
+import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.smtlogic.FormulaAccumulator;
+import nl.cwi.swat.smtlogic.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Tuple;
-import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.Constraint;
-import nl.cwi.swat.translation.data.row.RowFactory;
+import nl.cwi.swat.translation.data.row.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -74,7 +74,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula result = ff.or(rc.exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          largest.put(tuple, RowFactory.buildRowConstraint(result));
+          largest.put(tuple, TupleConstraintFactory.buildConstraint(result));
         }
       } else {
         // add tuple
@@ -111,7 +111,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula conjoined = ff.and(largest.get(tuple).exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(conjoined)) {
-          result.put(tuple, RowFactory.buildRowConstraint(conjoined));
+          result.put(tuple, TupleConstraintFactory.buildConstraint(conjoined));
         }
       }
     }
@@ -136,7 +136,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula result = ff.and(rc.exists(), right.get(tuple).exists().negation());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          left.put(tuple, RowFactory.buildRowConstraint(result));
+          left.put(tuple, TupleConstraintFactory.buildConstraint(result));
         }
       }
     }
@@ -177,17 +177,17 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple key : indexedRows) {
-      Optional<Set.Transient<RowAndConstraint>> rac = indexedRows.get(key);
+      Optional<Set.Transient<TupleAndConstraint>> rac = indexedRows.get(key);
 
       FormulaAccumulator acc = FormulaAccumulator.OR();
 
       if (rac.isPresent()) {
-        for (RowAndConstraint rc : rac.get()) {
+        for (TupleAndConstraint rc : rac.get()) {
           acc.add(rc.getConstraint().exists());
         }
       }
 
-      result.put(key, RowFactory.buildRowConstraint(ff.accumulate(acc)));
+      result.put(key, TupleConstraintFactory.buildConstraint(ff.accumulate(acc)));
     }
 
     return rf.buildRelation(projectedHeading, result.freeze(), true);
@@ -213,21 +213,21 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple current : indexedOwnRows) {
-      Optional<Set.Transient<RowAndConstraint>> ownRows = indexedOwnRows.get(current);
-      Optional<Set.Transient<RowAndConstraint>> otherRows = indexedOtherRows.get(current);
+      Optional<Set.Transient<TupleAndConstraint>> ownRows = indexedOwnRows.get(current);
+      Optional<Set.Transient<TupleAndConstraint>> otherRows = indexedOtherRows.get(current);
 
       if (ownRows.isPresent() && otherRows.isPresent()) {
-        for (RowAndConstraint ownRow : ownRows.get()) {
+        for (TupleAndConstraint ownRow : ownRows.get()) {
           Constraint rc = rows.get(current);
           Formula exists = rc.exists();
           Formula attCons = rc.attributeConstraints();
 
-          for (RowAndConstraint otherRow : otherRows.get()) {
-            Tuple joinedTuple = RowFactory.merge(ownRow.getTuple(), otherRow.getTuple(), indicesOfJoinedFields);
+          for (TupleAndConstraint otherRow : otherRows.get()) {
+            Tuple joinedTuple = TupleFactory.merge(ownRow.getTuple(), otherRow.getTuple(), indicesOfJoinedFields);
             exists = ff.and(exists, otherRow.getConstraint().exists());
             attCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
 
-            result.put(joinedTuple, RowFactory.buildRowConstraint(exists,attCons));
+            result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
           }
         }
       }
@@ -249,7 +249,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
   @Override
   public Relation asSingleton(@NotNull Tuple tuple) {
-    return rf.buildRelation(heading, PersistentTrieMap.of(tuple, RowFactory.ALL_TRUE), true);
+    return rf.buildRelation(heading, PersistentTrieMap.of(tuple, TupleConstraintFactory.ALL_TRUE), true);
   }
 
 }
