@@ -10,9 +10,9 @@ import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Constraint;
 import nl.cwi.swat.translation.data.row.RowFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public class UnaryIdRelation extends IdsOnlyRelation {
 
-  public UnaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Row, RowConstraint> rows,
+  public UnaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
                          @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
                          @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
@@ -56,22 +56,22 @@ public class UnaryIdRelation extends IdsOnlyRelation {
     AbstractRelation otherRel = (AbstractRelation) other;
     IndexedRows indexedOtherRows = otherRel.index(joiningFieldNames);
 
-    Map.Transient<Row,RowConstraint> result = PersistentTrieMap.transientOf();
+    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
-    for (Row current : rows.keySet()) {
+    for (Tuple current : rows.keySet()) {
       Optional<Set.Transient<RowAndConstraint>> joiningRows = indexedOtherRows.get(current);
 
       if (joiningRows.isPresent()) {
-        RowConstraint rc = rows.get(current);
+        Constraint rc = rows.get(current);
         Formula exists = rc.exists();
         Formula attCons = rc.attributeConstraints();
 
         for (RowAndConstraint joiningRow : joiningRows.get()) {
-          Row joinedRow = RowFactory.merge(current, joiningRow.getRow(), indicesOfJoinedFields);
+          Tuple joinedTuple = RowFactory.merge(current, joiningRow.getTuple(), indicesOfJoinedFields);
           exists = ff.and(exists, joiningRow.getConstraint().exists());
           attCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());
 
-          result.put(joinedRow, RowFactory.buildRowConstraint(exists,attCons));
+          result.put(joinedTuple, RowFactory.buildRowConstraint(exists,attCons));
         }
       }
     }

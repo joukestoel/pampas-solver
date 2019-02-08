@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RowTest {
+class TupleTest {
 
   @Test
   void zeroAttributesRowHasZeroLength() {
@@ -171,7 +171,7 @@ class RowTest {
     return new IdAtom(val);
   }
 
-  private Row create(int size) {
+  private Tuple create(int size) {
     Expression[] atts = new Expression[size];
     for (int i = 0; i < size; i++) {
       atts[i] = id("" + i);
@@ -180,30 +180,30 @@ class RowTest {
     return create(atts);
   }
 
-  private Row create(Expression... atts) {
+  private Tuple create(Expression... atts) {
     switch (atts.length) {
-      case 0: return EmptyRow.EMPTY;
-      case 1: return new OneAttributeRow(atts[0]);
-      case 2: return new TwoAttributesRow(atts[0],atts[1]);
-      case 3: return new ThreeAttributesRow(atts[0],atts[1],atts[2]);
-      case 4: return new FourAttributesRow(atts[0],atts[1],atts[2],atts[3]);
-      case 5: return new FiveAttributesRow(atts[0],atts[1],atts[2],atts[3],atts[4]);
-      default:return new NAttributeRow(atts);
+      case 0: return EmptyTuple.EMPTY;
+      case 1: return new UnaryTuple(atts[0]);
+      case 2: return new BinaryTuple(atts[0],atts[1]);
+      case 3: return new TernaryTuple(atts[0],atts[1],atts[2]);
+      case 4: return new FourAttributesTuple(atts[0],atts[1],atts[2],atts[3]);
+      case 5: return new FiveAttributesTuple(atts[0],atts[1],atts[2],atts[3],atts[4]);
+      default:return new NAttributeTuple(atts);
     }
   }
 
-  private void checkIterable(Row row, int expectedCount) {
+  private void checkIterable(Tuple tuple, int expectedCount) {
     int count = 0;
-    for (Expression ignored : row) {
+    for (Expression ignored : tuple) {
       count++;
     }
 
     assertEquals(expectedCount,count);
   }
 
-  private void checkOrder(Row row) {
-    for (int i = 0; i < row.arity(); i++) {
-      assertEquals(id("" + i), row.getAttributeAt(i));
+  private void checkOrder(Tuple tuple) {
+    for (int i = 0; i < tuple.arity(); i++) {
+      assertEquals(id("" + i), tuple.getAttributeAt(i));
     }
   }
 

@@ -2,49 +2,57 @@ package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.ints.IntDomain;
-import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.ast.relational.IdDomain;
 import nl.cwi.swat.smtlogic.Expression;
 import nl.cwi.swat.smtlogic.IdAtom;
 import nl.cwi.swat.smtlogic.ints.IntConstant;
 import nl.cwi.swat.smtlogic.ints.IntVariable;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class HeadingImpl implements Heading {
-  private final List<FieldDefinition> fields;
+  private final List<Attribute> attributes;
 
-  private boolean idsOnly = true;
+  private boolean idsOnly;
 
-  HeadingImpl(@NotNull List<FieldDefinition> fields) {
-    Iterator<FieldDefinition> fi = fields.iterator();
+  HeadingImpl(@NotNull List<Attribute> attributes) {
+    idsOnly = true;
 
-    while (fi.hasNext() && idsOnly) {
-      FieldDefinition fd = fi.next();
-      idsOnly = fd.getDomain() == IdDomain.ID;
-    }
-
-    this.fields = Collections.unmodifiableList(fields);
-  }
-
-  public int getAttributeIndex(String attributeName) {
-    for (int i = 0; i < fields.size(); i++) {
-      if (attributeName.equals(fields.get(i).getName())) {
-        return i;
+    Set<String> attNames = new HashSet<>(attributes.size());
+    for (Attribute fd : attributes) {
+      if (attNames.contains(fd.getName())) {
+        throw new IllegalArgumentException("Attribute names in heading must be distinct");
       }
+
+      idsOnly = fd.getDomain() == IdDomain.ID;
+      attNames.add(fd.getName());
     }
 
-    throw new IllegalArgumentException(String.format("Relation does not have an attribute with the name %s", attributeName));
+    this.attributes = Collections.unmodifiableList(attributes);
   }
 
-  public List<Integer> getAttributeIndices(Set<String> attributeNames) {
+  @Override
+  public int arity() {
+    return attributes.size();
+  }
+
+  public boolean isUnionCompatible(@NotNull Heading other) {
+    if (other.arity() != this.arity()) {
+      return false;
+    }
+
+    return this.equals(other);
+  }
+
+  @Override
+  public List<Integer> getAttributeIndices(@NotNull Set<String> attributeNames) {
     List<Integer> indices = new ArrayList<>(attributeNames.size());
 
-    for (int i = 0; i < fields.size(); i++) {
-      if (attributeNames.contains(fields.get(i).getName())) {
+    for (int i = 0; i < attributes.size(); i++) {
+      if (attributeNames.contains(attributes.get(i).getName())) {
         indices.add(i);
       }
     }
@@ -52,44 +60,29 @@ public class HeadingImpl implements Heading {
     return indices;
   }
 
-  @Override
-  public int arity() {
-    return fields.size();
-  }
-
   @NotNull
   @Override
-  public Iterator<FieldDefinition> iterator() {
-    return fields.iterator();
-  }
-
-  public boolean isUnionCompatible(Relation other) {
-    Heading otherHeading = other.getHeading();
-
-    if (otherHeading.arity() != this.arity()) {
-      return false;
-    }
-
-    return this.equals(otherHeading);
+  public Iterator<Attribute> iterator() {
+    return attributes.iterator();
   }
 
   @Override
-  public Set<String> fieldNamesOnly() {
-    return fields.stream()
-            .map(FieldDefinition::getName)
+  public Set<String> attributeNamesOnly() {
+    return attributes.stream()
+            .map(Attribute::getName)
             .collect(Collectors.toSet());
   }
 
   @Override
-  public Set<String> getIdFieldNames() {
-    return fields.stream()
+  public Set<String> getNamesOfIdDomainAttributes() {
+    return attributes.stream()
             .filter(f -> f.getDomain() == IdDomain.ID)
-            .map(FieldDefinition::getName)
+            .map(Attribute::getName)
             .collect(Collectors.toSet());
   }
 
   /**
-   * @param index - needs to be in the range of fields
+   * @param index - needs to be in the range of attributes
    * @return
    */
   @Override
@@ -98,7 +91,7 @@ public class HeadingImpl implements Heading {
       throw new IllegalArgumentException("Provided index is outside the arity of the relation");
     }
 
-    return fields.get(index).getName();
+    return attributes.get(index).getName();
   }
 
   @Override
@@ -107,68 +100,68 @@ public class HeadingImpl implements Heading {
       throw new IllegalArgumentException("Provided index is outside the arity of the relation");
     }
 
-    return fields.get(index).getDomain();
+    return attributes.get(index).getDomain();
   }
 
   /**
-   * Creates a new heading with some fields renamed.
+   * Creates a new heading with some attributes renamed.
    *
-   * @param renamedFields the fields to rename
-   * @requires \forall String a | renamedFields.containsKey(a) | fields.has(a),
-   * @return new {@ref HeadingImpl} with the fields renamed
+   * @param renamedAttributes the attributes to rename
+   * @requires \forall String a | renamedFields.containsKey(a) | attributes.has(a),
+   * @return new {@ref HeadingImpl} with the attributes renamed
    * @throws IllegalArgumentException if
-   *  not all fields in the {@code renamedFields} param were part of the original heading
+   *  not all attributes in the {@code renamedFields} param were part of the original heading
    */
   @Override
-  public Heading rename(@NotNull Map<String, String> renamedFields) {
-    if (renamedFields.size() > arity()) {
-      throw new IllegalArgumentException("The number of fields to rename is larger than the number of fields in the heading");
+  public Heading rename(@NotNull Map<String, String> renamedAttributes) {
+    if (renamedAttributes.size() > arity()) {
+      throw new IllegalArgumentException("The number of attributes to rename is larger than the number of attributes in the heading");
     }
 
     int nrOfRenamedFields = 0;
 
-    List<FieldDefinition> newFields = new ArrayList<>(fields);
+    List<Attribute> newFields = new ArrayList<>(attributes);
 
     for (int i = 0; i < newFields.size(); i++) {
-      FieldDefinition fd = newFields.get(i);
+      Attribute fd = newFields.get(i);
 
-      if (renamedFields.containsKey(fd.getName())) {
-        newFields.set(i, new FieldDefinition(i, renamedFields.get(fd.getName()), fd.getDomain()));
+      if (renamedAttributes.containsKey(fd.getName())) {
+        newFields.set(i, new Attribute(renamedAttributes.get(fd.getName()), fd.getDomain()));
         nrOfRenamedFields += 1;
       }
     }
 
-    if (nrOfRenamedFields != renamedFields.size()) {
-      throw new IllegalArgumentException("Not all renamings could be applied. Do all the renamed fields exist?");
+    if (nrOfRenamedFields != renamedAttributes.size()) {
+      throw new IllegalArgumentException("Not all renamings could be applied. Do all the renamed attributes exist?");
     }
 
     return new HeadingImpl(newFields);
   }
 
   /**
-   * Creates a new heading with some fields projected.
+   * Creates a new heading with some attributes projected.
    *
-   * @param projectedFields the fields to project out of the heading.
-   * @requires \forall String a | projectedFields.contains(a) | fields.has(a)
-   * @return new {@link HeadingImpl} containing only the projected fields.
+   * @param projectedAttributes the attributes to project out of the heading.
+   * @requires \forall String a | projectedFields.contains(a) | attributes.has(a)
+   * @return new {@link HeadingImpl} containing only the projected attributes.
    * @throws IllegalArgumentException if
-   *  not all fields in the {@code projectedFields} were part of the original heading
+   *  not all attributes in the {@code projectedFields} were part of the original heading
    */
   @Override
-  public Heading project(@NotNull Set<String> projectedFields) {
+  public Heading project(@NotNull Set<String> projectedAttributes) {
     int nrOfProjectedFields = 0;
 
-    List<FieldDefinition> newFields = new ArrayList<>(projectedFields.size());
+    List<Attribute> newFields = new ArrayList<>(projectedAttributes.size());
 
-    for (FieldDefinition fd : fields) {
-      if (projectedFields.contains(fd.getName())) {
+    for (Attribute fd : attributes) {
+      if (projectedAttributes.contains(fd.getName())) {
         newFields.add(fd);
         nrOfProjectedFields += 1;
       }
     }
 
-    if (nrOfProjectedFields != projectedFields.size()) {
-      throw new IllegalArgumentException("Not all fields could be projected. Do all the projected fields exist?");
+    if (nrOfProjectedFields != projectedAttributes.size()) {
+      throw new IllegalArgumentException("Not all attributes could be projected. Do all the projected attributes exist?");
     }
 
     return new HeadingImpl(newFields);
@@ -176,8 +169,8 @@ public class HeadingImpl implements Heading {
 
   @Override
   public Heading join(@NotNull Heading other) {
-    ArrayList<FieldDefinition> joinedFields = new ArrayList<>(fields);
-    for (FieldDefinition fd : other) {
+    ArrayList<Attribute> joinedFields = new ArrayList<>(attributes);
+    for (Attribute fd : other) {
       if (!joinedFields.contains(fd)) {
         joinedFields.add(fd);
       }
@@ -188,24 +181,25 @@ public class HeadingImpl implements Heading {
 
   @Override
   public Set<String> intersect(@NotNull Heading other) {
-    Set<String> fieldNames = fieldNamesOnly();
-    fieldNames.retainAll(other.fieldNamesOnly());
+    Set<String> fieldNames = attributeNamesOnly();
+    fieldNames.retainAll(other.attributeNamesOnly());
     return fieldNames;
   }
 
   @Override
-  public boolean idFieldsOnly() {
+  public boolean containsOnlyIdAttributes() {
     return idsOnly;
   }
 
   @Override
-  public boolean isRowCompatible(Row row) {
-    if (row.arity() != arity()) {
+  public boolean isRowCompatible(Tuple tuple) {
+    if (tuple.arity() != arity()) {
       return false;
     }
 
-    for (FieldDefinition fd : this) {
-      Expression att = row.getAttributeAt(fd.getPosition());
+    for (int i = 0; i < arity(); i++) {
+      Attribute fd = attributes.get(i);
+      Expression att = tuple.getAttributeAt(i);
 
       if (fd.getDomain() == IdDomain.ID && !(att instanceof IdAtom)) {
         return false;
@@ -224,11 +218,11 @@ public class HeadingImpl implements Heading {
 
     HeadingImpl that = (HeadingImpl) o;
 
-    return fields.equals(that.fields);
+    return attributes.equals(that.attributes);
   }
 
   @Override
   public int hashCode() {
-    return fields.hashCode();
+    return attributes.hashCode();
   }
 }

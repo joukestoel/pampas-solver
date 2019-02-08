@@ -6,12 +6,12 @@ import nl.cwi.swat.smtlogic.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Row;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Tuple;
+import nl.cwi.swat.translation.data.row.Constraint;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class StableRelation extends AbstractRelation {
-  public StableRelation(@NotNull Heading heading, @NotNull Map.Immutable<Row, RowConstraint> rows,
+  public StableRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
                         @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
                         @NotNull Cache<IndexCacheKey, IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);

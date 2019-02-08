@@ -3,16 +3,16 @@ package nl.cwi.swat.translation.data.row;
 import nl.cwi.swat.smtlogic.BooleanConstant;
 import nl.cwi.swat.smtlogic.Formula;
 
-public interface RowConstraint {
+public interface Constraint {
   Formula exists();
   Formula attributeConstraints();
   Formula combined();
 
-  class FullRowConstraint implements RowConstraint {
+  class FullConstraint implements Constraint {
     private final Formula exists;
     private final Formula attributeConstraints;
 
-    FullRowConstraint(Formula exists, Formula attributeConstraints) {
+    FullConstraint(Formula exists, Formula attributeConstraints) {
       this.exists = exists;
       this.attributeConstraints = attributeConstraints;
     }
@@ -37,7 +37,7 @@ public interface RowConstraint {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      FullRowConstraint that = (FullRowConstraint) o;
+      FullConstraint that = (FullConstraint) o;
 
       if (!exists.equals(that.exists)) return false;
       return attributeConstraints.equals(that.attributeConstraints);
@@ -51,10 +51,10 @@ public interface RowConstraint {
     }
   }
 
-  class ExistsOnlyRowConstaint implements RowConstraint {
+  class ExistsOnlyConstraint implements Constraint {
     private final Formula exists;
 
-    ExistsOnlyRowConstaint(Formula exists) {
+    ExistsOnlyConstraint(Formula exists) {
       this.exists = exists;
     }
 
@@ -78,7 +78,7 @@ public interface RowConstraint {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      ExistsOnlyRowConstaint that = (ExistsOnlyRowConstaint) o;
+      ExistsOnlyConstraint that = (ExistsOnlyConstraint) o;
 
       return exists.equals(that.exists);
     }

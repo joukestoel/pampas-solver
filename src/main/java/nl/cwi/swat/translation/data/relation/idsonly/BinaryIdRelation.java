@@ -8,9 +8,9 @@ import nl.cwi.swat.smtlogic.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Constraint;
 import nl.cwi.swat.translation.data.row.RowFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class BinaryIdRelation extends IdsOnlyRelation {
-  public BinaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Row, RowConstraint> rows,
+  public BinaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
                           @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
                           @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
@@ -38,7 +38,7 @@ public class BinaryIdRelation extends IdsOnlyRelation {
     Set<String> to   = Collections.singleton(heading.getFieldNameAt(1));
 
     IndexedRows base = index(to);
-    Map.Transient<Row,RowConstraint> result = rows.asTransient();
+    Map.Transient<Tuple, Constraint> result = rows.asTransient();
     BinaryIdRelation relFromPrevIt = (BinaryIdRelation) shallowClone();
 
     boolean changed = true;
@@ -47,9 +47,9 @@ public class BinaryIdRelation extends IdsOnlyRelation {
       changed = false;
 
       IndexedRows indexedFrom = relFromPrevIt.index(from);
-      Map.Transient<Row,RowConstraint> currentIt = PersistentTrieMap.transientOf();
+      Map.Transient<Tuple, Constraint> currentIt = PersistentTrieMap.transientOf();
 
-      for (Row key : base) {
+      for (Tuple key : base) {
         Optional<io.usethesource.capsule.Set.Transient<RowAndConstraint>> ownRacs = base.get(key);
 
         if (ownRacs.isPresent()) {
@@ -59,16 +59,16 @@ public class BinaryIdRelation extends IdsOnlyRelation {
 
             for (RowAndConstraint ownRac: ownRacs.get()) {
               for (RowAndConstraint otherRac: otherRacs.get()) {
-                Row joinedRow = RowFactory.merge(ownRac.getRow(), otherRac.getRow(), List.of(0));
+                Tuple joinedTuple = RowFactory.merge(ownRac.getTuple(), otherRac.getTuple(), List.of(0));
 
-                if (!rows.containsKey(joinedRow)) { // already in base relation, no need to add
+                if (!rows.containsKey(joinedTuple)) { // already in base relation, no need to add
                   Formula exists = ff.and(ownRac.getConstraint().exists(), otherRac.getConstraint().exists());
 
-                  if (currentIt.containsKey(joinedRow)) {
-                    exists = ff.or(currentIt.get(joinedRow).exists(), exists);
+                  if (currentIt.containsKey(joinedTuple)) {
+                    exists = ff.or(currentIt.get(joinedTuple).exists(), exists);
                   }
 
-                  currentIt.put(joinedRow, RowFactory.buildRowConstraint(exists));
+                  currentIt.put(joinedTuple, RowFactory.buildRowConstraint(exists));
                   changed = true;
                 }
 

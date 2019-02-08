@@ -9,11 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Factory class that constructs {@link Row}. Contains factory methods to build partial rows and methods to merge two
+ * Factory class that constructs {@link Tuple}. Contains factory methods to build partial rows and methods to merge two
  * rows together.
  */
 public class RowFactory {
-  public static final RowConstraint ALL_TRUE = new RowConstraint() {
+  public static final Constraint ALL_TRUE = new Constraint() {
     @Override
     public Formula exists() {
       return BooleanConstant.TRUE;
@@ -30,12 +30,12 @@ public class RowFactory {
     }
   };
 
-  public static RowConstraint buildRowConstraint(@NotNull final Formula exists) {
-    return new RowConstraint.ExistsOnlyRowConstaint(exists);
+  public static Constraint buildRowConstraint(@NotNull final Formula exists) {
+    return new Constraint.ExistsOnlyConstraint(exists);
   }
 
-  public static RowConstraint buildRowConstraint(@NotNull final Formula exists, @NotNull final Formula attributeConstraints) {
-    return new RowConstraint.FullRowConstraint(exists, attributeConstraints);
+  public static Constraint buildRowConstraint(@NotNull final Formula exists, @NotNull final Formula attributeConstraints) {
+    return new Constraint.FullConstraint(exists, attributeConstraints);
   }
 
   /**
@@ -43,15 +43,15 @@ public class RowFactory {
    * @param attributes an array of the attributes that are part of the new row
    * @return a row of arity (@code attributes.length} containing the passed in {@code attributes}
    */
-  public static Row buildRow(@NotNull final Expression... attributes) {
+  public static Tuple buildTuple(@NotNull final Expression... attributes) {
     switch (attributes.length) {
-      case 0: return EmptyRow.EMPTY;
-      case 1: return new OneAttributeRow(attributes[0]);
-      case 2: return new TwoAttributesRow(attributes[0], attributes[1]);
-      case 3: return new ThreeAttributesRow(attributes[0], attributes[1], attributes[2]);
-      case 4: return new FourAttributesRow(attributes[0], attributes[1], attributes[2], attributes[3]);
-      case 5: return new FiveAttributesRow(attributes[0], attributes[1], attributes[2], attributes[3], attributes[4]);
-      default: return new NAttributeRow(attributes);
+      case 0: return EmptyTuple.EMPTY;
+      case 1: return new UnaryTuple(attributes[0]);
+      case 2: return new BinaryTuple(attributes[0], attributes[1]);
+      case 3: return new TernaryTuple(attributes[0], attributes[1], attributes[2]);
+      case 4: return new FourAttributesTuple(attributes[0], attributes[1], attributes[2], attributes[3]);
+      case 5: return new FiveAttributesTuple(attributes[0], attributes[1], attributes[2], attributes[3], attributes[4]);
+      default: return new NAttributeTuple(attributes);
     }
   }
 
@@ -63,7 +63,7 @@ public class RowFactory {
    * @return a partial row containing only those attributes from the original iff its original index is contained in the
    *   {@code attributeIndices} list
    */
-  public static Row buildPartialRow(@NotNull final Row original, @NotNull final List<Integer> attributeIndices) {
+  public static Tuple buildPartialTuple(@NotNull final Tuple original, @NotNull final List<Integer> attributeIndices) {
     final Expression[] partialAtts = new Expression[attributeIndices.size()];
 
     int newIndex = 0;
@@ -72,7 +72,7 @@ public class RowFactory {
       newIndex += 1;
     }
 
-    return buildRow(partialAtts);
+    return buildTuple(partialAtts);
   }
 
   /**
@@ -86,7 +86,7 @@ public class RowFactory {
    * @return a merged row containing all the attributes of the base row and the non-skipped attributes of the other row
    * @throws IllegalArgumentException when the skipPosition list contains indices outside the bounds of the other row
    */
-  public static Row merge(@NotNull final Row base, @NotNull final Row other, @NotNull List<Integer> skipPositions) {
+  public static Tuple merge(@NotNull final Tuple base, @NotNull final Tuple other, @NotNull List<Integer> skipPositions) {
     for (int i : skipPositions) {
       if (i < 0 || i >= other.arity()) {
         throw new IllegalArgumentException("List with indices to skip contains indices outside the bounds of the 'other' row");
@@ -103,14 +103,14 @@ public class RowFactory {
       }
     }
 
-    return buildRow(exprs);
+    return buildTuple(exprs);
   }
 
-  private static Expression[] getExpressions(@NotNull Row row) {
-    final Expression[] exprs = new Expression[row.arity()];
+  private static Expression[] getExpressions(@NotNull Tuple tuple) {
+    final Expression[] exprs = new Expression[tuple.arity()];
 
-    for (int i = 0; i < row.arity(); i++) {
-      exprs[i] = row.getAttributeAt(i);
+    for (int i = 0; i < tuple.arity(); i++) {
+      exprs[i] = tuple.getAttributeAt(i);
     }
 
     return exprs;

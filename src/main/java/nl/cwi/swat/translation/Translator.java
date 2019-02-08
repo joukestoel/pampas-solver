@@ -7,7 +7,7 @@ import nl.cwi.swat.ast.relational.Literal;
 import nl.cwi.swat.smtlogic.*;
 import nl.cwi.swat.smtlogic.Formula;
 import nl.cwi.swat.translation.data.relation.Relation;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
@@ -134,9 +134,9 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     final Relation declRel = decl.getBinding().accept(this);
     final Environment origEnv = env;
 
-    Iterator<Row> iterator = declRel.iterator();
+    Iterator<Tuple> iterator = declRel.iterator();
     while (iterator.hasNext() && !accumulator.isShortCircuited()) {
-      Row current = iterator.next();
+      Tuple current = iterator.next();
       env = origEnv.extend(decl.getVariable(), declRel.asSingleton(current));
       Formula newConstraintVal = ffactory.or(ffactory.not(declRel.getCombinedConstraints(current)), declConstraintValue);
 
@@ -163,7 +163,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
       return FALSE;
     }
 
-    Iterator<Row> it = r.iterator();
+    Iterator<Tuple> it = r.iterator();
 
     FormulaAccumulator accumulator = FormulaAccumulator.OR();
 
@@ -200,7 +200,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     FormulaAccumulator accumulator = FormulaAccumulator.AND();
     Formula partial = FALSE;
 
-    Iterator<Row> it = r.iterator();
+    Iterator<Tuple> it = r.iterator();
     while (it.hasNext() && !accumulator.isShortCircuited()) {
       Formula f = r.getCombinedConstraints(it.next());
       accumulator.add(ffactory.or(f.negation(), partial.negation()));
@@ -227,7 +227,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
     FormulaAccumulator accumulator = FormulaAccumulator.OR();
     Formula partial = FALSE;
 
-    Iterator<Row> it = r.iterator();
+    Iterator<Tuple> it = r.iterator();
 
     while (it.hasNext() && !accumulator.isShortCircuited()) {
       Formula f = r.getCombinedConstraints(it.next());

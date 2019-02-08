@@ -7,9 +7,9 @@ import io.usethesource.capsule.core.PersistentTrieMap;
 import io.usethesource.capsule.core.PersistentTrieSet;
 import nl.cwi.swat.smtlogic.Formula;
 import nl.cwi.swat.smtlogic.FormulaFactory;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Constraint;
 import nl.cwi.swat.translation.data.row.RowFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractRelation implements Relation {
-  protected final Map.Immutable<Row, RowConstraint> rows;
+  protected final Map.Immutable<Tuple, Constraint> rows;
   protected final Cache<IndexCacheKey,IndexedRows> indexCache;
 
   protected final Heading heading;
   protected final FormulaFactory ff;
   protected final RelationFactory rf;
 
-  public AbstractRelation(@NotNull Heading heading, @NotNull Map.Immutable<Row, RowConstraint> rows,
+  public AbstractRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
                           @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
                           @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     this.heading = heading;
@@ -43,7 +43,7 @@ public abstract class AbstractRelation implements Relation {
 
   @Override
   public boolean unionCompatible(@NotNull Relation other) {
-    return heading.isUnionCompatible(other);
+    return heading.isUnionCompatible(other.getHeading());
   }
 
   @Override
@@ -62,26 +62,26 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
-  public Formula getCombinedConstraints(@NotNull Row row) {
-    if (!rows.containsKey(row)) {
-      throw new IllegalArgumentException("Row is not part of this relation");
+  public Formula getCombinedConstraints(@NotNull Tuple tuple) {
+    if (!rows.containsKey(tuple)) {
+      throw new IllegalArgumentException("Tuple is not part of this relation");
     }
 
-    return rows.get(row).combined();
+    return rows.get(tuple).combined();
   }
 
   @Override
-  public RowConstraint getRowConstraint(@NotNull Row row) {
-    if (!rows.containsKey(row)) {
-      throw new IllegalArgumentException("Row is not part of this relation");
+  public Constraint getRowConstraint(@NotNull Tuple tuple) {
+    if (!rows.containsKey(tuple)) {
+      throw new IllegalArgumentException("Tuple is not part of this relation");
     }
 
-    return rows.get(row);
+    return rows.get(tuple);
   }
 
   @NotNull
   @Override
-  public Iterator<Row> iterator() {
+  public Iterator<Tuple> iterator() {
     return rows.keyIterator();
   }
 
@@ -97,8 +97,8 @@ public abstract class AbstractRelation implements Relation {
     // find positions of attributes to index on
     List<Integer> attIndices = heading.getAttributeIndices(indexOn);
 
-    for (java.util.Map.Entry<Row, RowConstraint> rac : rows.entrySet()) {
-      Row key = RowFactory.buildPartialRow(rac.getKey(), attIndices);
+    for (java.util.Map.Entry<Tuple, Constraint> rac : rows.entrySet()) {
+      Tuple key = RowFactory.buildPartialTuple(rac.getKey(), attIndices);
       indexed.add(key, rac.getKey(), rac.getValue());
     }
 
@@ -118,19 +118,19 @@ public abstract class AbstractRelation implements Relation {
       throw new IllegalArgumentException("There are overlapping fields. Can not perform cross product");
     }
 
-    Map.Transient<Row,RowConstraint> result = PersistentTrieMap.transientOf();
+    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
-    for (Row lhs : this) {
-      RowConstraint lhsCons = rows.get(lhs);
+    for (Tuple lhs : this) {
+      Constraint lhsCons = rows.get(lhs);
 
-      for (Row rhs : other) {
-        RowConstraint rhsCons = other.getRowConstraint(rhs);
+      for (Tuple rhs : other) {
+        Constraint rhsCons = other.getRowConstraint(rhs);
 
-        Row joinedRow = RowFactory.merge(lhs, rhs, Collections.emptyList());
+        Tuple joinedTuple = RowFactory.merge(lhs, rhs, Collections.emptyList());
         Formula exists = ff.and(lhsCons.exists(), rhsCons.exists());
         Formula attCons = ff.and(lhsCons.attributeConstraints(), rhsCons.attributeConstraints());
 
-        result.put(joinedRow, RowFactory.buildRowConstraint(exists, attCons));
+        result.put(joinedTuple, RowFactory.buildRowConstraint(exists, attCons));
       }
     }
 
@@ -164,14 +164,14 @@ public abstract class AbstractRelation implements Relation {
     return "TODO";
   }
 
-  public class IndexedRows implements Iterable<Row> {
-    private final Map.Transient<Row, Set.Transient<RowAndConstraint>> indexedRows;
+  public class IndexedRows implements Iterable<Tuple> {
+    private final Map.Transient<Tuple, Set.Transient<RowAndConstraint>> indexedRows;
 
     IndexedRows() {
       this.indexedRows = PersistentTrieMap.transientOf();
     }
 
-    public void add(@NotNull Row key, @NotNull Row whole, @NotNull RowConstraint rc) {
+    public void add(@NotNull Tuple key, @NotNull Tuple whole, @NotNull Constraint rc) {
       Set.Transient<RowAndConstraint> currentVal = indexedRows.get(key);
 
       if (currentVal != null) {
@@ -185,8 +185,8 @@ public abstract class AbstractRelation implements Relation {
       indexedRows.put(key, currentVal);
     }
 
-    public Optional<Set.Transient<RowAndConstraint>> get(@NotNull Row row) {
-      Set.Transient<RowAndConstraint> subrows = indexedRows.get(row);
+    public Optional<Set.Transient<RowAndConstraint>> get(@NotNull Tuple tuple) {
+      Set.Transient<RowAndConstraint> subrows = indexedRows.get(tuple);
       return subrows != null ? Optional.of(subrows) : Optional.empty();
     }
 
@@ -194,12 +194,12 @@ public abstract class AbstractRelation implements Relation {
       return indexedRows.size();
     }
 
-    protected Map.Immutable<Row,RowConstraint> flatten() {
-      Map.Transient<Row,RowConstraint> flattened = PersistentTrieMap.transientOf();
+    protected Map.Immutable<Tuple, Constraint> flatten() {
+      Map.Transient<Tuple, Constraint> flattened = PersistentTrieMap.transientOf();
 
       for (Set<RowAndConstraint> rows : indexedRows.values()) {
         for (RowAndConstraint rac : rows) {
-          flattened.put(rac.getRow(),rac.getConstraint());
+          flattened.put(rac.getTuple(),rac.getConstraint());
         }
       }
 
@@ -223,21 +223,21 @@ public abstract class AbstractRelation implements Relation {
 
     @NotNull
     @Override
-    public Iterator<Row> iterator() {
+    public Iterator<Tuple> iterator() {
       return indexedRows.keyIterator();
     }
   }
 
   public static class IndexCacheKey {
-    private final Map.Immutable<Row,RowConstraint> rows;
+    private final Map.Immutable<Tuple, Constraint> rows;
     private final java.util.Set<String> key;
 
-    private IndexCacheKey(@NotNull Map.Immutable<Row, RowConstraint> rows, @NotNull java.util.Set<String> key) {
+    private IndexCacheKey(@NotNull Map.Immutable<Tuple, Constraint> rows, @NotNull java.util.Set<String> key) {
       this.rows = rows;
       this.key = key;
     }
 
-    static IndexCacheKey toKey(@NotNull Map.Immutable<Row, RowConstraint> rows, @NotNull java.util.Set<String> key) {
+    static IndexCacheKey toKey(@NotNull Map.Immutable<Tuple, Constraint> rows, @NotNull java.util.Set<String> key) {
       return new IndexCacheKey(rows,key);
     }
 

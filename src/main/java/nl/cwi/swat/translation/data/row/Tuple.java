@@ -7,18 +7,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
-public interface Row extends Iterable<Expression>{
+public interface Tuple extends Iterable<Expression>{
   int arity();
   Expression getAttributeAt(int i);
 }
 
-abstract class AbstractRow implements Row { }
+abstract class AbstractTuple implements Tuple { }
 
-class EmptyRow extends AbstractRow {
+class EmptyTuple extends AbstractTuple {
 
-  static final Row EMPTY = new EmptyRow();
+  static final Tuple EMPTY = new EmptyTuple();
 
-  private EmptyRow() {}
+  private EmptyTuple() {}
 
   @Override
   public int arity() {
@@ -38,10 +38,10 @@ class EmptyRow extends AbstractRow {
 
 }
 
-class OneAttributeRow extends AbstractRow {
+class UnaryTuple extends AbstractTuple {
   private final Expression att;
 
-  OneAttributeRow(@NotNull Expression att) {
+  UnaryTuple(@NotNull Expression att) {
     this.att = att;
   }
 
@@ -53,7 +53,7 @@ class OneAttributeRow extends AbstractRow {
   @Override
   public Expression getAttributeAt(int i) {
     if (i != 0) {
-      throw new IllegalArgumentException("Row only contains 1 attribute");
+      throw new IllegalArgumentException("Tuple only contains 1 attribute");
     }
     return att;
   }
@@ -63,7 +63,7 @@ class OneAttributeRow extends AbstractRow {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    OneAttributeRow that = (OneAttributeRow) o;
+    UnaryTuple that = (UnaryTuple) o;
 
     return att.equals(that.att);
   }
@@ -93,11 +93,11 @@ class OneAttributeRow extends AbstractRow {
   }
 }
 
-class TwoAttributesRow extends AbstractRow {
+class BinaryTuple extends AbstractTuple {
   private final Expression att1;
   private final Expression att2;
 
-  TwoAttributesRow(@NotNull Expression att1, @NotNull Expression att2) {
+  BinaryTuple(@NotNull Expression att1, @NotNull Expression att2) {
     this.att1 = att1;
     this.att2 = att2;
   }
@@ -112,7 +112,7 @@ class TwoAttributesRow extends AbstractRow {
     switch (i) {
       case 0: return att1;
       case 1: return att2;
-      default: throw new IllegalArgumentException("Row only contains 2 attributes");
+      default: throw new IllegalArgumentException("Tuple only contains 2 attributes");
     }
   }
 
@@ -121,7 +121,7 @@ class TwoAttributesRow extends AbstractRow {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    TwoAttributesRow that = (TwoAttributesRow) o;
+    BinaryTuple that = (BinaryTuple) o;
 
     if (!att1.equals(that.att1)) return false;
     return att2.equals(that.att2);
@@ -159,12 +159,12 @@ class TwoAttributesRow extends AbstractRow {
   }
 }
 
-class ThreeAttributesRow extends AbstractRow  {
+class TernaryTuple extends AbstractTuple {
   private final Expression att1;
   private final Expression att2;
   private final Expression att3;
 
-  ThreeAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3) {
+  TernaryTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -181,7 +181,7 @@ class ThreeAttributesRow extends AbstractRow  {
       case 0: return att1;
       case 1: return att2;
       case 2: return att3;
-      default: throw new IllegalArgumentException("Row only contains 3 attributes");
+      default: throw new IllegalArgumentException("Tuple only contains 3 attributes");
     }
   }
 
@@ -190,7 +190,7 @@ class ThreeAttributesRow extends AbstractRow  {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ThreeAttributesRow that = (ThreeAttributesRow) o;
+    TernaryTuple that = (TernaryTuple) o;
 
     if (!att1.equals(that.att1)) return false;
     if (!att2.equals(that.att2)) return false;
@@ -231,13 +231,13 @@ class ThreeAttributesRow extends AbstractRow  {
   }
 }
 
-class FourAttributesRow extends AbstractRow  {
+class FourAttributesTuple extends AbstractTuple {
   private final Expression att1;
   private final Expression att2;
   private final Expression att3;
   private final Expression att4;
 
-  FourAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3, @NotNull Expression att4) {
+  FourAttributesTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3, @NotNull Expression att4) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -256,7 +256,7 @@ class FourAttributesRow extends AbstractRow  {
       case 1: return att2;
       case 2: return att3;
       case 3: return att4;
-      default: throw new IllegalArgumentException("Row only contains 4 attributes");
+      default: throw new IllegalArgumentException("Tuple only contains 4 attributes");
     }
   }
 
@@ -265,7 +265,7 @@ class FourAttributesRow extends AbstractRow  {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FourAttributesRow that = (FourAttributesRow) o;
+    FourAttributesTuple that = (FourAttributesTuple) o;
 
     if (!att1.equals(that.att1)) return false;
     if (!att2.equals(that.att2)) return false;
@@ -308,15 +308,15 @@ class FourAttributesRow extends AbstractRow  {
   }
 }
 
-class FiveAttributesRow extends AbstractRow  {
+class FiveAttributesTuple extends AbstractTuple {
   private final Expression att1;
   private final Expression att2;
   private final Expression att3;
   private final Expression att4;
   private final Expression att5;
 
-  FiveAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3,
-                           @NotNull Expression att4, @NotNull Expression att5) {
+  FiveAttributesTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3,
+                      @NotNull Expression att4, @NotNull Expression att5) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -337,7 +337,7 @@ class FiveAttributesRow extends AbstractRow  {
       case 2: return att3;
       case 3: return att4;
       case 4: return att5;
-      default: throw new IllegalArgumentException("Row only contains 5 attributes");
+      default: throw new IllegalArgumentException("Tuple only contains 5 attributes");
     }
   }
 
@@ -346,7 +346,7 @@ class FiveAttributesRow extends AbstractRow  {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FiveAttributesRow that = (FiveAttributesRow) o;
+    FiveAttributesTuple that = (FiveAttributesTuple) o;
 
     if (!att1.equals(that.att1)) return false;
     if (!att2.equals(that.att2)) return false;
@@ -393,10 +393,10 @@ class FiveAttributesRow extends AbstractRow  {
   }
 }
 
-class NAttributeRow extends AbstractRow  {
+class NAttributeTuple extends AbstractTuple {
   private final Expression[] atts;
 
-  NAttributeRow(@NotNull Expression[] atts) {
+  NAttributeTuple(@NotNull Expression[] atts) {
     this.atts = atts;
   }
 
@@ -408,7 +408,7 @@ class NAttributeRow extends AbstractRow  {
   @Override
   public Expression getAttributeAt(int i) {
     if (i < 0 || i >= atts.length) {
-      throw new IllegalArgumentException(String.format("Row only contains %d attributes", atts.length));
+      throw new IllegalArgumentException(String.format("Tuple only contains %d attributes", atts.length));
     }
 
     return atts[i];
@@ -419,7 +419,7 @@ class NAttributeRow extends AbstractRow  {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    NAttributeRow that = (NAttributeRow) o;
+    NAttributeTuple that = (NAttributeTuple) o;
 
     return Arrays.equals(atts, that.atts);
   }

@@ -1,10 +1,10 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.translation.data.row.Row;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Tuple;
+import nl.cwi.swat.translation.data.row.Constraint;
 
-public interface Relation extends Iterable<Row> {
+public interface Relation extends Iterable<Tuple> {
 
   int arity();
   Heading getHeading();
@@ -12,8 +12,8 @@ public interface Relation extends Iterable<Row> {
   int nrOfRows();
   boolean isEmpty();
 
-  Formula getCombinedConstraints(Row row);
-  RowConstraint getRowConstraint(Row row);
+  Formula getCombinedConstraints(Tuple tuple);
+  Constraint getRowConstraint(Tuple tuple);
 
   boolean unionCompatible(Relation other);
   boolean isStable();
@@ -36,5 +36,5 @@ public interface Relation extends Iterable<Row> {
 
   Relation aggregate();
 
-  Relation asSingleton(Row row);
+  Relation asSingleton(Tuple tuple);
 }

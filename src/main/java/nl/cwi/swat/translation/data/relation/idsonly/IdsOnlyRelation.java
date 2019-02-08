@@ -9,9 +9,9 @@ import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import nl.cwi.swat.translation.data.row.Row;
+import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.RowAndConstraint;
-import nl.cwi.swat.translation.data.row.RowConstraint;
+import nl.cwi.swat.translation.data.row.Constraint;
 import nl.cwi.swat.translation.data.row.RowFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public abstract class IdsOnlyRelation extends AbstractRelation {
 
-  IdsOnlyRelation(@NotNull Heading heading, @NotNull Map.Immutable<Row, RowConstraint> rows,
+  IdsOnlyRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
                   @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
                   @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
@@ -56,8 +56,8 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     IdsOnlyRelation otherRel = (IdsOnlyRelation)other;
 
-    Map.Transient<Row,RowConstraint> largest;
-    Map.Immutable<Row,RowConstraint> smallest;
+    Map.Transient<Tuple, Constraint> largest;
+    Map.Immutable<Tuple, Constraint> smallest;
 
     if (this.nrOfRows() > otherRel.nrOfRows()) {
       largest = rows.asTransient();
@@ -67,18 +67,18 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
       smallest = rows;
     }
 
-    for (Row row: smallest.keySet()) {
-      if (largest.containsKey(row)) {
+    for (Tuple tuple : smallest.keySet()) {
+      if (largest.containsKey(tuple)) {
         // update exists field
-        RowConstraint rc = largest.remove(row);
-        Formula result = ff.or(rc.exists(), smallest.get(row).exists());
+        Constraint rc = largest.remove(tuple);
+        Formula result = ff.or(rc.exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          largest.put(row, RowFactory.buildRowConstraint(result));
+          largest.put(tuple, RowFactory.buildRowConstraint(result));
         }
       } else {
-        // add row
-        largest.put(row, smallest.get(row));
+        // add tuple
+        largest.put(tuple, smallest.get(tuple));
       }
     }
 
@@ -93,8 +93,8 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     IdsOnlyRelation otherRel = (IdsOnlyRelation) other;
 
-    Map.Immutable<Row, RowConstraint> largest;
-    Map.Immutable<Row, RowConstraint> smallest;
+    Map.Immutable<Tuple, Constraint> largest;
+    Map.Immutable<Tuple, Constraint> smallest;
 
     if (this.nrOfRows() < otherRel.nrOfRows()) {
       largest = rows;
@@ -104,14 +104,14 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
       smallest = rows;
     }
 
-    Map.Transient<Row, RowConstraint> result = PersistentTrieMap.transientOf();
+    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
-    for (Row row : smallest.keySet()) {
-      if (largest.containsKey(row)) {
-        Formula conjoined = ff.and(largest.get(row).exists(), smallest.get(row).exists());
+    for (Tuple tuple : smallest.keySet()) {
+      if (largest.containsKey(tuple)) {
+        Formula conjoined = ff.and(largest.get(tuple).exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(conjoined)) {
-          result.put(row, RowFactory.buildRowConstraint(conjoined));
+          result.put(tuple, RowFactory.buildRowConstraint(conjoined));
         }
       }
     }
@@ -126,17 +126,17 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     IdsOnlyRelation otherRel = (IdsOnlyRelation)other;
 
-    Map.Transient<Row,RowConstraint> left = rows.asTransient();
-    Map.Immutable<Row,RowConstraint> right = otherRel.rows;
+    Map.Transient<Tuple, Constraint> left = rows.asTransient();
+    Map.Immutable<Tuple, Constraint> right = otherRel.rows;
 
-    for (Row row: left.keySet()) {
-      if (right.containsKey(row)) {
+    for (Tuple tuple : left.keySet()) {
+      if (right.containsKey(tuple)) {
         // update exists field
-        RowConstraint rc = left.remove(row);
-        Formula result = ff.and(rc.exists(), right.get(row).exists().negation());
+        Constraint rc = left.remove(tuple);
+        Formula result = ff.and(rc.exists(), right.get(tuple).exists().negation());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          left.put(row, RowFactory.buildRowConstraint(result));
+          left.put(tuple, RowFactory.buildRowConstraint(result));
         }
       }
     }
@@ -153,11 +153,11 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     FormulaAccumulator acc = FormulaAccumulator.AND();
 
-    Iterator<Row> rowIt = rows.keyIterator();
+    Iterator<Tuple> rowIt = rows.keyIterator();
     while (rowIt.hasNext() && !acc.isShortCircuited()) {
-      Row current = rowIt.next();
+      Tuple current = rowIt.next();
 
-      RowConstraint oc = otherRel.rows.get(current);
+      Constraint oc = otherRel.rows.get(current);
       if (oc != null) {
         acc.add(ff.or(rows.get(current).combined().negation(), oc.combined()));
       } else {
@@ -174,9 +174,9 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     IndexedRows indexedRows = index(projectedAttributes);
 
-    Map.Transient<Row,RowConstraint> result = PersistentTrieMap.transientOf();
+    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
-    for (Row key : indexedRows) {
+    for (Tuple key : indexedRows) {
       Optional<Set.Transient<RowAndConstraint>> rac = indexedRows.get(key);
 
       FormulaAccumulator acc = FormulaAccumulator.OR();
@@ -210,24 +210,24 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     IndexedRows indexedOwnRows = index(joiningFieldNames);
     IndexedRows indexedOtherRows = otherRel.index(joiningFieldNames);
 
-    Map.Transient<Row,RowConstraint> result = PersistentTrieMap.transientOf();
+    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
-    for (Row current : indexedOwnRows) {
+    for (Tuple current : indexedOwnRows) {
       Optional<Set.Transient<RowAndConstraint>> ownRows = indexedOwnRows.get(current);
       Optional<Set.Transient<RowAndConstraint>> otherRows = indexedOtherRows.get(current);
 
       if (ownRows.isPresent() && otherRows.isPresent()) {
         for (RowAndConstraint ownRow : ownRows.get()) {
-          RowConstraint rc = rows.get(current);
+          Constraint rc = rows.get(current);
           Formula exists = rc.exists();
           Formula attCons = rc.attributeConstraints();
 
           for (RowAndConstraint otherRow : otherRows.get()) {
-            Row joinedRow = RowFactory.merge(ownRow.getRow(), otherRow.getRow(), indicesOfJoinedFields);
+            Tuple joinedTuple = RowFactory.merge(ownRow.getTuple(), otherRow.getTuple(), indicesOfJoinedFields);
             exists = ff.and(exists, otherRow.getConstraint().exists());
             attCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
 
-            result.put(joinedRow, RowFactory.buildRowConstraint(exists,attCons));
+            result.put(joinedTuple, RowFactory.buildRowConstraint(exists,attCons));
           }
         }
       }
@@ -248,8 +248,8 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Relation asSingleton(@NotNull Row row) {
-    return rf.buildRelation(heading, PersistentTrieMap.of(row, RowFactory.ALL_TRUE), true);
+  public Relation asSingleton(@NotNull Tuple tuple) {
+    return rf.buildRelation(heading, PersistentTrieMap.of(tuple, RowFactory.ALL_TRUE), true);
   }
 
 }

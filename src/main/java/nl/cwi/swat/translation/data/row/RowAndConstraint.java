@@ -3,19 +3,19 @@ package nl.cwi.swat.translation.data.row;
 import org.jetbrains.annotations.NotNull;
 
 public class RowAndConstraint {
-  private final Row row;
-  private final RowConstraint constraint;
+  private final Tuple tuple;
+  private final Constraint constraint;
 
-  public RowAndConstraint(@NotNull Row row, @NotNull RowConstraint constraint) {
-    this.row = row;
+  public RowAndConstraint(@NotNull Tuple tuple, @NotNull Constraint constraint) {
+    this.tuple = tuple;
     this.constraint = constraint;
   }
 
-  public Row getRow() {
-    return row;
+  public Tuple getTuple() {
+    return tuple;
   }
 
-  public RowConstraint getConstraint() {
+  public Constraint getConstraint() {
     return constraint;
   }
 
@@ -26,13 +26,13 @@ public class RowAndConstraint {
 
     RowAndConstraint that = (RowAndConstraint) o;
 
-    if (!row.equals(that.row)) return false;
+    if (!tuple.equals(that.tuple)) return false;
     return constraint.equals(that.constraint);
   }
 
   @Override
   public int hashCode() {
-    int result = row.hashCode();
+    int result = tuple.hashCode();
     result = 31 * result + constraint.hashCode();
     return result;
   }

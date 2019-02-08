@@ -4,27 +4,21 @@ import nl.cwi.swat.ast.Domain;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a single field definition in a
+ * Represents a single attribute definition.
  */
-public class FieldDefinition {
-  private final int position;
+public class Attribute {
   private final String name;
   private final Domain domain;
 
   /**
-   * Constructs an FieldDefinition object. Part of the heading of a relation
+   * Constructs an Attribute object. Part of the heading of a relation
    *
    * @param name field name
    * @param domain domain of the field
    */
-  FieldDefinition(@NotNull Integer position, @NotNull final String name, @NotNull final Domain domain) {
-    this.position = position;
+  Attribute(@NotNull final String name, @NotNull final Domain domain) {
     this.name = name;
     this.domain = domain;
-  }
-
-  public int getPosition() {
-    return position;
   }
 
   public String getName() {
@@ -40,7 +34,7 @@ public class FieldDefinition {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FieldDefinition that = (FieldDefinition) o;
+    Attribute that = (Attribute) o;
 
     if (!name.equals(that.name)) return false;
     return domain.equals(that.domain);
