@@ -22,7 +22,7 @@ public abstract class MultiGate implements Formula {
     this.operator = operator;
     this.label = label;
 
-    this.labelHash =  new Long(label).hashCode();
+    this.labelHash = Long.valueOf(label).hashCode();
   }
 
   @Override

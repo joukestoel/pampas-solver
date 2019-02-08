@@ -1,10 +1,18 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
+import nl.cwi.swat.ast.ints.IntDomain;
+import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.ast.relational.IdDomain;
+import nl.cwi.swat.smtlogic.Expression;
+import nl.cwi.swat.smtlogic.IdAtom;
+import nl.cwi.swat.smtlogic.ints.IntConstant;
+import nl.cwi.swat.smtlogic.ints.IntVariable;
+import nl.cwi.swat.translation.data.row.Row;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HeadingImpl implements Heading {
   private final List<FieldDefinition> fields;
@@ -13,6 +21,7 @@ public class HeadingImpl implements Heading {
 
   HeadingImpl(@NotNull List<FieldDefinition> fields) {
     Iterator<FieldDefinition> fi = fields.iterator();
+
     while (fi.hasNext() && idsOnly) {
       FieldDefinition fd = fi.next();
       idsOnly = fd.getDomain() == IdDomain.ID;
@@ -66,12 +75,17 @@ public class HeadingImpl implements Heading {
 
   @Override
   public Set<String> fieldNamesOnly() {
-    Set<String> names = new HashSet<>(fields.size());
-    for (FieldDefinition fd : fields) {
-      names.add(fd.getName());
-    }
+    return fields.stream()
+            .map(FieldDefinition::getName)
+            .collect(Collectors.toSet());
+  }
 
-    return names;
+  @Override
+  public Set<String> getIdFieldNames() {
+    return fields.stream()
+            .filter(f -> f.getDomain() == IdDomain.ID)
+            .map(FieldDefinition::getName)
+            .collect(Collectors.toSet());
   }
 
   /**
@@ -119,7 +133,7 @@ public class HeadingImpl implements Heading {
       FieldDefinition fd = newFields.get(i);
 
       if (renamedFields.containsKey(fd.getName())) {
-        newFields.set(i, new FieldDefinition(renamedFields.get(fd.getName()), fd.getDomain()));
+        newFields.set(i, new FieldDefinition(i, renamedFields.get(fd.getName()), fd.getDomain()));
         nrOfRenamedFields += 1;
       }
     }
@@ -182,6 +196,25 @@ public class HeadingImpl implements Heading {
   @Override
   public boolean idFieldsOnly() {
     return idsOnly;
+  }
+
+  @Override
+  public boolean isRowCompatible(Row row) {
+    if (row.arity() != arity()) {
+      return false;
+    }
+
+    for (FieldDefinition fd : this) {
+      Expression att = row.getAttributeAt(fd.getPosition());
+
+      if (fd.getDomain() == IdDomain.ID && !(att instanceof IdAtom)) {
+        return false;
+      } else if (fd.getDomain() == IntDomain.INT && (!(att instanceof IntConstant || att instanceof IntVariable))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   @Override

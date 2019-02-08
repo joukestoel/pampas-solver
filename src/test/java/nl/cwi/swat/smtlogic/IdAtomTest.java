@@ -1,4 +1,4 @@
-package nl.cwi.swat.translation.data.cell;
+package nl.cwi.swat.smtlogic;
 
 import org.junit.jupiter.api.Test;
 

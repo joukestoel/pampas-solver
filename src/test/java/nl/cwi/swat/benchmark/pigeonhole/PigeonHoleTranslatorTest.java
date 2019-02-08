@@ -1,4 +1,4 @@
-package nl.cwi.swat.translation;
+package nl.cwi.swat.benchmark.pigeonhole;
 
 public class PigeonHoleTranslatorTest {
 //  private Translator translator;

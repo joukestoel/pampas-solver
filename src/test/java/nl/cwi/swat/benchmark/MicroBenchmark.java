@@ -1,4 +1,4 @@
-package nl.cwi.swat.util;
+package nl.cwi.swat.benchmark;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;

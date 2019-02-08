@@ -6,6 +6,8 @@ import dagger.Module;
 import dagger.Provides;
 import io.usethesource.capsule.Set;
 import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.smtlogic.SimpleFormulaFactory;
 import nl.cwi.swat.smtlogic.SimplificationFactory;
 import nl.cwi.swat.translation.TranslationCache;
 import nl.cwi.swat.translation.data.relation.Relation;
@@ -32,6 +34,12 @@ public class Config {
     Cache<SimplificationFactory.FormulaCacheKey, Set.Transient<Formula>> formulaCache = Caffeine.newBuilder().recordStats().build();
 
     return new SimplificationFactory(reductionDepth, formulaCache);
+  }
+
+  @Provides
+  @Singleton
+  public FormulaFactory provideFormulaFactory() {
+    return new SimpleFormulaFactory();
   }
 }
 

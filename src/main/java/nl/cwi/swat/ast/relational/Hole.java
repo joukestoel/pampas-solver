@@ -5,7 +5,7 @@ import nl.cwi.swat.ast.TranslationVisitor;
 public class Hole extends Literal<String> {
   public static final Hole HOLE = new Hole();
 
-  public Hole() {
+  Hole() {
     super("?");
   }
 

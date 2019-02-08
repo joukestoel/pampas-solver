@@ -117,7 +117,12 @@ public abstract class Operator implements Comparable<Operator>{
       public String toString() { return "const"; }
     };
 
-    /**
+    public static final Operator EQ = new Operator(6) {
+      @Override
+      public String toString() { return "="; }
+    };
+
+  /**
      * An n-ary operator, where n>=2
      */
     public static abstract class Nary extends Operator {

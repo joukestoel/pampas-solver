@@ -31,6 +31,24 @@ public interface RowConstraint {
     public Formula combined() {
       return null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      FullRowConstraint that = (FullRowConstraint) o;
+
+      if (!exists.equals(that.exists)) return false;
+      return attributeConstraints.equals(that.attributeConstraints);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = exists.hashCode();
+      result = 31 * result + attributeConstraints.hashCode();
+      return result;
+    }
   }
 
   class ExistsOnlyRowConstaint implements RowConstraint {
@@ -53,6 +71,21 @@ public interface RowConstraint {
     @Override
     public Formula combined() {
       return exists;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ExistsOnlyRowConstaint that = (ExistsOnlyRowConstaint) o;
+
+      return exists.equals(that.exists);
+    }
+
+    @Override
+    public int hashCode() {
+      return exists.hashCode();
     }
   }
 }

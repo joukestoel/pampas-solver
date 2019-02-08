@@ -33,6 +33,11 @@ public class ReductionFormulaFactory implements FormulaFactory {
   }
 
   @Override
+  public Formula eq(Expression e1, Expression e2) {
+    return null;
+  }
+
+  @Override
   public Formula newBoolVar(String relName) {
     return sfactory.newBoolVar(relName);
   }

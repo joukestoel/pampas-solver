@@ -8,6 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Factory class that constructs {@link Row}. Contains factory methods to build partial rows and methods to merge two
+ * rows together.
+ */
 public class RowFactory {
   public static final RowConstraint ALL_TRUE = new RowConstraint() {
     @Override
@@ -34,12 +38,14 @@ public class RowFactory {
     return new RowConstraint.FullRowConstraint(exists, attributeConstraints);
   }
 
+  /**
+   * Builds a row of arity {@code attributes.length} containing the {@code attributes}
+   * @param attributes an array of the attributes that are part of the new row
+   * @return a row of arity (@code attributes.length} containing the passed in {@code attributes}
+   */
   public static Row buildRow(@NotNull final Expression... attributes) {
-    if (attributes.length == 0) {
-      throw new IllegalArgumentException("Can not build a row with zero attributes");
-    }
-
     switch (attributes.length) {
+      case 0: return EmptyRow.EMPTY;
       case 1: return new OneAttributeRow(attributes[0]);
       case 2: return new TwoAttributesRow(attributes[0], attributes[1]);
       case 3: return new ThreeAttributesRow(attributes[0], attributes[1], attributes[2]);
@@ -49,6 +55,14 @@ public class RowFactory {
     }
   }
 
+  /**
+   * Builds a row containing only those attributes of which its indices are contained in the {@code attributeIndices}
+   * list.
+   * @param original the original row
+   * @param attributeIndices the attributes to include in de partial row
+   * @return a partial row containing only those attributes from the original iff its original index is contained in the
+   *   {@code attributeIndices} list
+   */
   public static Row buildPartialRow(@NotNull final Row original, @NotNull final List<Integer> attributeIndices) {
     final Expression[] partialAtts = new Expression[attributeIndices.size()];
 
@@ -61,23 +75,45 @@ public class RowFactory {
     return buildRow(partialAtts);
   }
 
-  public static Row merge(@NotNull final Row left, @NotNull final Row right, List<Integer> columnsToSkipRight) {
-    final Expression[] leftAtts = left.getAttributes();
-    final Expression[] rightAtts = right.getAttributes();
-
-    // Create the new attributes, copying all elements from the left row
-    final Expression[] newAttributes = Arrays.copyOf(leftAtts, leftAtts.length + (rightAtts.length - columnsToSkipRight.size()));
-
-    // Now append all attributes from the right row skipping the tagged columns
-
-    int newAttsIndex = leftAtts.length;
-    for (int i = 0; i < rightAtts.length; i++) {
-      if (!columnsToSkipRight.contains(i)) {
-        newAttributes[newAttsIndex] = rightAtts[i];
-        newAttsIndex += 1;
+  /**
+   * Merges two rows in such a way that the attributes of the {@code base} row always are in the merged row and all
+   * the attributes of the {@code other} row of which the indices are not contained in the {@code skipPosition} list are
+   * appended to the end of the base row
+   *
+   * @param base the row to use as base
+   * @param other the row that is appended to the base row
+   * @param skipPositions the indices of the attributes that need to be skipped in the other row
+   * @return a merged row containing all the attributes of the base row and the non-skipped attributes of the other row
+   * @throws IllegalArgumentException when the skipPosition list contains indices outside the bounds of the other row
+   */
+  public static Row merge(@NotNull final Row base, @NotNull final Row other, @NotNull List<Integer> skipPositions) {
+    for (int i : skipPositions) {
+      if (i < 0 || i >= other.arity()) {
+        throw new IllegalArgumentException("List with indices to skip contains indices outside the bounds of the 'other' row");
       }
     }
 
-    return buildRow(newAttributes);
+    final Expression[] exprs = Arrays.copyOf(getExpressions(base),base.arity() + other.arity() - skipPositions.size());
+
+    int addIndex = base.arity();
+    for (int i = 0; i < other.arity(); i++) {
+      if (!skipPositions.contains(i)) {
+        exprs[addIndex] = other.getAttributeAt(i);
+        addIndex++;
+      }
+    }
+
+    return buildRow(exprs);
   }
+
+  private static Expression[] getExpressions(@NotNull Row row) {
+    final Expression[] exprs = new Expression[row.arity()];
+
+    for (int i = 0; i < row.arity(); i++) {
+      exprs[i] = row.getAttributeAt(i);
+    }
+
+    return exprs;
+  }
+
 }

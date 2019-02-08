@@ -9,6 +9,8 @@ public interface FormulaFactory {
 
   Formula not(Formula f);
 
+  Formula eq(Expression e1, Expression e2);
+
   Formula newBoolVar(String relName);
 
   Expression newVar(Sort sort, String relName);

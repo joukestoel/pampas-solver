@@ -1,6 +1,7 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
+import nl.cwi.swat.translation.data.row.Row;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ public interface Heading extends Iterable<FieldDefinition> {
   String getFieldNameAt(int index);
   Domain getDomainAt(int index);
   Set<String> fieldNamesOnly();
+  Set<String> getIdFieldNames();
 
   List<Integer> getAttributeIndices(Set<String> attributeNames);
 
@@ -23,4 +25,5 @@ public interface Heading extends Iterable<FieldDefinition> {
   Set<String> intersect(Heading other);
 
   boolean idFieldsOnly();
+  boolean isRowCompatible(Row row);
 }

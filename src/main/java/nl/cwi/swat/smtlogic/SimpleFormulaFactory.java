@@ -56,6 +56,22 @@ public class SimpleFormulaFactory implements FormulaFactory {
   }
 
   @Override
+  public Formula eq(Expression e1, Expression e2) {
+    Expression high;
+    Expression low;
+
+    if (e1.label() > e2.label()) {
+      high = e1;
+      low = e2;
+    } else {
+      high = e2;
+      low = e1;
+    }
+
+    return new Equality(Operator.EQ, label++, low, high);
+  }
+
+  @Override
   public Formula newBoolVar(String relName) {
     return null;
   }

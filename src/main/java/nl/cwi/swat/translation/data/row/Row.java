@@ -1,25 +1,41 @@
 package nl.cwi.swat.translation.data.row;
 
 import nl.cwi.swat.smtlogic.Expression;
-import nl.cwi.swat.smtlogic.IdAtom;
-import nl.cwi.swat.smtlogic.ints.IntConstant;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 
-public interface Row {
-  int getNrOfAttributes();
+public interface Row extends Iterable<Expression>{
+  int arity();
   Expression getAttributeAt(int i);
-
-  Expression[] getAttributes();
-
-  boolean isStable();
 }
 
-abstract class AbstractRow implements Row {
-  protected boolean isStableAttribute(Expression att) {
-    return att instanceof IdAtom || att instanceof IntConstant;
+abstract class AbstractRow implements Row { }
+
+class EmptyRow extends AbstractRow {
+
+  static final Row EMPTY = new EmptyRow();
+
+  private EmptyRow() {}
+
+  @Override
+  public int arity() {
+    return 0;
   }
+
+  @Override
+  public Expression getAttributeAt(int i) {
+    throw new IllegalArgumentException("This row has no attributes");
+  }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return Collections.emptyIterator();
+  }
+
 }
 
 class OneAttributeRow extends AbstractRow {
@@ -30,26 +46,16 @@ class OneAttributeRow extends AbstractRow {
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return 1;
   }
 
   @Override
   public Expression getAttributeAt(int i) {
-    if (i != 1) {
+    if (i != 0) {
       throw new IllegalArgumentException("Row only contains 1 attribute");
     }
     return att;
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return new Expression[]{att};
-  }
-
-  @Override
-  public boolean isStable() {
-    return isStableAttribute(att);
   }
 
   @Override
@@ -66,19 +72,38 @@ class OneAttributeRow extends AbstractRow {
   public int hashCode() {
     return att.hashCode();
   }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < 1;
+      }
+
+      @Override
+      public Expression next() {
+        current++;
+        return att;
+      }
+    };
+  }
 }
 
 class TwoAttributesRow extends AbstractRow {
   private final Expression att1;
   private final Expression att2;
 
-  public TwoAttributesRow(@NotNull Expression att1, @NotNull Expression att2) {
+  TwoAttributesRow(@NotNull Expression att1, @NotNull Expression att2) {
     this.att1 = att1;
     this.att2 = att2;
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return 2;
   }
 
@@ -89,16 +114,6 @@ class TwoAttributesRow extends AbstractRow {
       case 1: return att2;
       default: throw new IllegalArgumentException("Row only contains 2 attributes");
     }
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return new Expression[] {att1,att2};
-  }
-
-  @Override
-  public boolean isStable() {
-    return isStableAttribute(att1) && isStableAttribute(att2);
   }
 
   @Override
@@ -118,6 +133,30 @@ class TwoAttributesRow extends AbstractRow {
     result = 31 * result + att2.hashCode();
     return result;
   }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+      @Override
+      public boolean hasNext() {
+        return current < 2;
+      }
+
+      @Override
+      public Expression next() {
+        current++;
+        if (current == 1) {
+          return att1;
+        } else if (current == 2) {
+          return att2;
+        } else {
+          throw new IllegalStateException("Can't iterate over more than 2 attributes");
+        }
+      }
+    };
+  }
 }
 
 class ThreeAttributesRow extends AbstractRow  {
@@ -125,14 +164,14 @@ class ThreeAttributesRow extends AbstractRow  {
   private final Expression att2;
   private final Expression att3;
 
-  public ThreeAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3) {
+  ThreeAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return 3;
   }
 
@@ -144,16 +183,6 @@ class ThreeAttributesRow extends AbstractRow  {
       case 2: return att3;
       default: throw new IllegalArgumentException("Row only contains 3 attributes");
     }
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return new Expression[] {att1,att2,att3};
-  }
-
-  @Override
-  public boolean isStable() {
-    return isStableAttribute(att1) && isStableAttribute(att2) && isStableAttribute(att3);
   }
 
   @Override
@@ -175,6 +204,31 @@ class ThreeAttributesRow extends AbstractRow  {
     result = 31 * result + att3.hashCode();
     return result;
   }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < 3;
+      }
+
+      @Override
+      public Expression next() {
+        current++;
+
+        switch (current) {
+          case 1: return att1;
+          case 2: return att2;
+          case 3: return att3;
+          default: throw new IllegalStateException("Can't iterate over more than 3 attributes");
+        }
+      }
+    };
+  }
 }
 
 class FourAttributesRow extends AbstractRow  {
@@ -183,7 +237,7 @@ class FourAttributesRow extends AbstractRow  {
   private final Expression att3;
   private final Expression att4;
 
-  public FourAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3, @NotNull Expression att4) {
+  FourAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3, @NotNull Expression att4) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -191,7 +245,7 @@ class FourAttributesRow extends AbstractRow  {
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return 4;
   }
 
@@ -204,16 +258,6 @@ class FourAttributesRow extends AbstractRow  {
       case 3: return att4;
       default: throw new IllegalArgumentException("Row only contains 4 attributes");
     }
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return new Expression[] {att1,att2,att3,att4};
-  }
-
-  @Override
-  public boolean isStable() {
-    return isStableAttribute(att1) && isStableAttribute(att2) && isStableAttribute(att3) && isStableAttribute(att4);
   }
 
   @Override
@@ -237,6 +281,31 @@ class FourAttributesRow extends AbstractRow  {
     result = 31 * result + att4.hashCode();
     return result;
   }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < 4;
+      }
+
+      @Override
+      public Expression next() {
+        current++;
+        switch (current) {
+          case 1: return att1;
+          case 2: return att2;
+          case 3: return att3;
+          case 4: return att4;
+          default: throw new IllegalStateException("Can't iterate over more than 4 attributes");
+        }
+      }
+    };
+  }
 }
 
 class FiveAttributesRow extends AbstractRow  {
@@ -246,7 +315,7 @@ class FiveAttributesRow extends AbstractRow  {
   private final Expression att4;
   private final Expression att5;
 
-  public FiveAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3,
+  FiveAttributesRow(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3,
                            @NotNull Expression att4, @NotNull Expression att5) {
     this.att1 = att1;
     this.att2 = att2;
@@ -256,7 +325,7 @@ class FiveAttributesRow extends AbstractRow  {
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return 5;
   }
 
@@ -270,17 +339,6 @@ class FiveAttributesRow extends AbstractRow  {
       case 4: return att5;
       default: throw new IllegalArgumentException("Row only contains 5 attributes");
     }
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return new Expression[] {att1,att2,att3,att4,att5};
-  }
-
-  @Override
-  public boolean isStable() {
-    return isStableAttribute(att1) && isStableAttribute(att2) && isStableAttribute(att3) &&
-            isStableAttribute(att4) && isStableAttribute(att5);
   }
 
   @Override
@@ -306,17 +364,44 @@ class FiveAttributesRow extends AbstractRow  {
     result = 31 * result + att5.hashCode();
     return result;
   }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < 5;
+      }
+
+      @Override
+      public Expression next() {
+        current++;
+
+        switch (current) {
+          case 1: return att1;
+          case 2: return att2;
+          case 3: return att3;
+          case 4: return att4;
+          case 5: return att5;
+          default: throw new IllegalStateException("Can't iterate over more than 5 attributes");
+        }
+      }
+    };
+  }
 }
 
 class NAttributeRow extends AbstractRow  {
   private final Expression[] atts;
 
-  public NAttributeRow(@NotNull Expression[] atts) {
+  NAttributeRow(@NotNull Expression[] atts) {
     this.atts = atts;
   }
 
   @Override
-  public int getNrOfAttributes() {
+  public int arity() {
     return atts.length;
   }
 
@@ -327,22 +412,6 @@ class NAttributeRow extends AbstractRow  {
     }
 
     return atts[i];
-  }
-
-  @Override
-  public Expression[] getAttributes() {
-    return atts;
-  }
-
-  @Override
-  public boolean isStable() {
-    for (Expression att : atts) {
-      if (!isStableAttribute(att)) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   @Override
@@ -358,5 +427,23 @@ class NAttributeRow extends AbstractRow  {
   @Override
   public int hashCode() {
     return Arrays.hashCode(atts);
+  }
+
+  @NotNull
+  @Override
+  public Iterator<Expression> iterator() {
+    return new Iterator<>() {
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < atts.length;
+      }
+
+      @Override
+      public Expression next() {
+        return atts[current++];
+      }
+    };
   }
 }

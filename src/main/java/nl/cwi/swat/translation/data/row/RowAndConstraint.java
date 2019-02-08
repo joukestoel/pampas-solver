@@ -18,4 +18,22 @@ public class RowAndConstraint {
   public RowConstraint getConstraint() {
     return constraint;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    RowAndConstraint that = (RowAndConstraint) o;
+
+    if (!row.equals(that.row)) return false;
+    return constraint.equals(that.constraint);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = row.hashCode();
+    result = 31 * result + constraint.hashCode();
+    return result;
+  }
 }

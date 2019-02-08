@@ -1,6 +1,6 @@
-package nl.cwi.swat.translation;
+package nl.cwi.swat.benchmark.pigeonhole;
 
-import nl.cwi.swat.util.MicroBenchmark;
+import nl.cwi.swat.benchmark.MicroBenchmark;
 
 public class PigeonHoleBenchmark extends MicroBenchmark {
   @Override

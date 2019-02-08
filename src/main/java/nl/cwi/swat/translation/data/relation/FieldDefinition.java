@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a single field definition in a
  */
 public class FieldDefinition {
+  private final int position;
   private final String name;
   private final Domain domain;
 
@@ -16,9 +17,14 @@ public class FieldDefinition {
    * @param name field name
    * @param domain domain of the field
    */
-  FieldDefinition(@NotNull final String name, @NotNull final Domain domain) {
+  FieldDefinition(@NotNull Integer position, @NotNull final String name, @NotNull final Domain domain) {
+    this.position = position;
     this.name = name;
     this.domain = domain;
+  }
+
+  public int getPosition() {
+    return position;
   }
 
   public String getName() {

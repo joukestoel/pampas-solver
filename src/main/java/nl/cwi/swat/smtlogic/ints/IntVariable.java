@@ -14,4 +14,14 @@ public class IntVariable implements Expression {
   public Operator operator() {
     return null;
   }
+
+  @Override
+  public int hash(Operator op) {
+    return 0;
+  }
+
+  @Override
+  public long label() {
+    return 0;
+  }
 }

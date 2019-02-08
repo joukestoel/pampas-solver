@@ -194,17 +194,17 @@ public abstract class AbstractRelation implements Relation {
       return indexedRows.size();
     }
 
-//    public Map.Immutable<Row,RowConstraint> flatten() {
-//      Map.Transient<Row,RowConstraint> flattened = PersistentTrieMap.transientOf();
-//
-//      for (Set<RowAndConstraint> rows : indexedRows.values()) {
-//        for (RowAndConstraint rac : rows) {
-//          flattened.put(rac.getRow(),rac.getConstraint());
-//        }
-//      }
-//
-//      return flattened.freeze();
-//    }
+    protected Map.Immutable<Row,RowConstraint> flatten() {
+      Map.Transient<Row,RowConstraint> flattened = PersistentTrieMap.transientOf();
+
+      for (Set<RowAndConstraint> rows : indexedRows.values()) {
+        for (RowAndConstraint rac : rows) {
+          flattened.put(rac.getRow(),rac.getConstraint());
+        }
+      }
+
+      return flattened.freeze();
+    }
 
     @Override
     public boolean equals(Object o) {

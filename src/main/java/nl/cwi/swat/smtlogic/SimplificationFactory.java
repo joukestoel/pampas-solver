@@ -175,7 +175,8 @@ public class SimplificationFactory {
   }
 
   public Assembler assembler(Operator low, Operator high) {
-    return ASSEMBLERS[((low.ordinal << 2) + high.ordinal) - ((low.ordinal * (low.ordinal - 1)) >> 1)];
+//    return ASSEMBLERS[((low.ordinal << 2) + high.ordinal) - ((low.ordinal * (low.ordinal - 1)) >> 1)];
+    return ASSEMBLERS[((low.ordinal * 4) + high.ordinal) - ((low.ordinal * (low.ordinal - 1)) / 2)];
   }
 
   private interface Assembler {
