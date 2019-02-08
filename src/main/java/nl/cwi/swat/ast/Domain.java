@@ -1,4 +1,5 @@
 package nl.cwi.swat.ast;
 
-public class Domain {
+public enum Domain {
+  ID,INT;
 }

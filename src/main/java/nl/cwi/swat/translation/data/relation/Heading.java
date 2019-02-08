@@ -1,37 +1,235 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
+import nl.cwi.swat.smtlogic.Expression;
+import nl.cwi.swat.smtlogic.IdAtom;
+import nl.cwi.swat.smtlogic.ints.IntConstant;
+import nl.cwi.swat.smtlogic.ints.IntVariable;
 import nl.cwi.swat.translation.data.row.Tuple;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The Heading of a {@link Relation}.
- * A heading describes which fields (names and associated domains) are part
+ * A heading describes which attributes (names and associated domains) are part
  * of the relation.
  * More formally (definition taken from 'An Introduction To Database Systems' by C.T.Date; 6th ed. 1994):
  * a Heading is a fixed set of attribute-name domain pairs {<A1:D1>,<A2,D2>...<An,Dn>} such that each attribute
  * Aj corresponds to exactly one domain Dj. The attribute names are arbitrary labels and are all distinct.
+ *
  */
-public interface Heading extends Iterable<Attribute> {
-  int arity();
-  boolean isUnionCompatible(Heading other);
+public class Heading implements Iterable<Attribute> {
+  private final List<Attribute> attributes;
+  private Set<Attribute> attributesAsSet;
 
-  String getFieldNameAt(int index);
-  Domain getDomainAt(int index);
-  Set<String> attributeNamesOnly();
-  Set<String> getNamesOfIdDomainAttributes();
+  private boolean idsOnly;
 
-  List<Integer> getAttributeIndices(Set<String> attributeNames);
+  Heading(@NotNull List<Attribute> attributes) {
+    idsOnly = true;
 
-  Heading rename(Map<String,String> renamedAttributes);
-  Heading project(Set<String> projectedAttributes);
-  Heading join(Heading other);
+    Set<String> attNames = new HashSet<>(attributes.size());
+    for (Attribute fd : attributes) {
+      if (attNames.contains(fd.getName())) {
+        throw new IllegalArgumentException("Attribute names in heading must be distinct");
+      }
 
-  Set<String> intersect(Heading other);
+      idsOnly = fd.getDomain() == Domain.ID;
+      attNames.add(fd.getName());
+    }
 
-  boolean containsOnlyIdAttributes();
-  boolean isRowCompatible(Tuple tuple);
+    this.attributes = Collections.unmodifiableList(attributes);
+  }
+
+  public int arity() {
+    return attributes.size();
+  }
+
+  boolean isUnionCompatible(@NotNull Heading other) {
+    if (other.arity() != this.arity()) {
+      return false;
+    }
+
+    return asSet().equals(other.asSet());
+  }
+
+  private Set<Attribute> asSet() {
+    if (attributesAsSet == null) {
+      attributesAsSet = new HashSet<>(attributes);
+    }
+    return attributesAsSet;
+  }
+
+
+  public List<Integer> getAttributeIndices(@NotNull Set<String> attributeNames) {
+    List<Integer> indices = new ArrayList<>(attributeNames.size());
+
+    for (int i = 0; i < attributes.size(); i++) {
+      if (attributeNames.contains(attributes.get(i).getName())) {
+        indices.add(i);
+      }
+    }
+
+    if (indices.size() != attributeNames.size()) {
+      throw new IllegalArgumentException("Not all the given attribute names are part of this heading");
+    }
+
+    return indices;
+  }
+
+  @NotNull
+  public Iterator<Attribute> iterator() {
+    return attributes.iterator();
+  }
+
+  Set<String> getNamesOfIdDomainAttributes() {
+    return attributes.stream()
+            .filter(f -> f.getDomain() == Domain.ID)
+            .map(Attribute::getName)
+            .collect(Collectors.toSet());
+  }
+
+  /**
+   * @param index - needs to be in the range of attributes
+   * @return
+   */
+  public String getAttributeNameAt(int index) {
+    if (index < 0 || index >= arity()) {
+      throw new IllegalArgumentException("Provided index is outside the arity of the relation");
+    }
+
+    return attributes.get(index).getName();
+  }
+
+  Domain getDomainAt(int index) {
+    if (index < 0 || index >= arity()) {
+      throw new IllegalArgumentException("Provided index is outside the arity of the relation");
+    }
+
+    return attributes.get(index).getDomain();
+  }
+
+  /**
+   * Creates a new heading with some attributes renamed.
+   *
+   * @param renamedAttributes the attributes to rename
+   * @requires \forall String a | renamedFields.containsKey(a) | attributes.has(a),
+   * @return new {@ref Heading} with the attributes renamed
+   * @throws IllegalArgumentException if
+   *  not all attributes in the {@code renamedFields} param were part of the original heading
+   */
+  public Heading rename(@NotNull Map<String, String> renamedAttributes) {
+    if (renamedAttributes.size() > arity()) {
+      throw new IllegalArgumentException("The number of attributes to rename is larger than the number of attributes in the heading");
+    }
+
+    int nrOfRenamedFields = 0;
+
+    List<Attribute> newFields = new ArrayList<>(attributes);
+
+    for (int i = 0; i < newFields.size(); i++) {
+      Attribute fd = newFields.get(i);
+
+      if (renamedAttributes.containsKey(fd.getName())) {
+        newFields.set(i, new Attribute(renamedAttributes.get(fd.getName()), fd.getDomain()));
+        nrOfRenamedFields += 1;
+      }
+    }
+
+    if (nrOfRenamedFields != renamedAttributes.size()) {
+      throw new IllegalArgumentException("Not all renamings could be applied. Do all the renamed attributes exist?");
+    }
+
+    return new Heading(newFields);
+  }
+
+  /**
+   * Creates a new heading with some attributes projected.
+   *
+   * @param projectedAttributes the attributes to project out of the heading.
+   * @requires \forall String a: projectedFields.contains(a) | attributes.has(a)
+   * @return new {@link Heading} containing only the projected attributes.
+   * @throws IllegalArgumentException if
+   *  not all attributes in the {@code projectedFields} were part of the original heading
+   */
+  public Heading project(@NotNull Set<String> projectedAttributes) {
+    int nrOfProjectedFields = 0;
+
+    List<Attribute> newFields = new ArrayList<>(projectedAttributes.size());
+
+    for (Attribute fd : attributes) {
+      if (projectedAttributes.contains(fd.getName())) {
+        newFields.add(fd);
+        nrOfProjectedFields += 1;
+      }
+    }
+
+    if (nrOfProjectedFields != projectedAttributes.size()) {
+      throw new IllegalArgumentException("Not all attributes could be projected. Do all the projected attributes exist?");
+    }
+
+    return new Heading(newFields);
+  }
+
+  public Heading join(@NotNull Heading other) {
+    ArrayList<Attribute> joinedFields = new ArrayList<>(attributes);
+    for (Attribute fd : other) {
+      if (!joinedFields.contains(fd)) {
+        joinedFields.add(fd);
+      }
+    }
+
+    return new Heading(joinedFields);
+  }
+
+  public Set<String> intersect(@NotNull Heading other) {
+    Set<String> fieldNames = getAttributeNamesOnly();
+    fieldNames.retainAll(other.getAttributeNamesOnly());
+    return fieldNames;
+  }
+
+  boolean containsOnlyIdAttributes() {
+    return idsOnly;
+  }
+
+  boolean isTupleCompatible(@NotNull Tuple tuple) {
+    if (tuple.arity() != arity()) {
+      return false;
+    }
+
+    for (int i = 0; i < arity(); i++) {
+      Attribute fd = attributes.get(i);
+      Expression att = tuple.getAttributeAt(i);
+
+      if (fd.getDomain() == Domain.ID && !(att instanceof IdAtom)) {
+        return false;
+      } else if (fd.getDomain() == Domain.INT && (!(att instanceof IntConstant || att instanceof IntVariable))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private Set<String> getAttributeNamesOnly() {
+    return attributes.stream()
+            .map(Attribute::getName)
+            .collect(Collectors.toSet());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Heading that = (Heading) o;
+
+    return attributes.equals(that.attributes);
+  }
+
+  @Override
+  public int hashCode() {
+    return attributes.hashCode();
+  }
 }

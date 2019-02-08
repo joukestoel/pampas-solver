@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.ast.Domain;
-import nl.cwi.swat.ast.ints.IntDomain;
 import nl.cwi.swat.ast.ints.IntLiteral;
 import nl.cwi.swat.ast.relational.Hole;
 import nl.cwi.swat.ast.relational.Id;
@@ -91,7 +90,7 @@ public class RelationFactory {
       }
 
       public TupleBuilder done() {
-        return Builder.this.phase1Done(new HeadingImpl(fields));
+        return Builder.this.phase1Done(new Heading(fields));
       }
 
     }
@@ -138,7 +137,7 @@ public class RelationFactory {
         } else if (literal instanceof IntLiteral) {
           return new IntConstant(((IntLiteral)literal).getValue());
         } else if (Hole.HOLE == literal) {
-          if (IntDomain.INT.equals(rel.heading.getDomainAt(pos))) {
+          if (Domain.INT == rel.heading.getDomainAt(pos)) {
             return RelationFactory.this.ff.newVar(IntSort.INT, Builder.this.relName);
           } else {
              throw new IllegalStateException("No conversion for literal " + literal);
@@ -190,7 +189,7 @@ public class RelationFactory {
     }
 
     private void add(Tuple tuple, Formula exists) {
-      if (!heading.isRowCompatible(tuple)) {
+      if (!heading.isTupleCompatible(tuple)) {
         throw new IllegalArgumentException("Tuple to be added is not compatible with relation");
       }
 

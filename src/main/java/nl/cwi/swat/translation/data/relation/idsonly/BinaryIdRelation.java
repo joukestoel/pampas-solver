@@ -31,8 +31,8 @@ public class BinaryIdRelation extends IdsOnlyRelation {
   @Override
   public Relation transitiveClosure() {
     // Could we use Warshall's Algorithm?
-    Set<String> from = Collections.singleton(heading.getFieldNameAt(0));
-    Set<String> to   = Collections.singleton(heading.getFieldNameAt(1));
+    Set<String> from = Collections.singleton(heading.getAttributeNameAt(0));
+    Set<String> to   = Collections.singleton(heading.getAttributeNameAt(1));
 
     IndexedRows base = index(to);
     Map.Transient<Tuple, Constraint> result = rows.asTransient();
