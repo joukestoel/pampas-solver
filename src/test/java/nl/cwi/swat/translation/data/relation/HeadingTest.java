@@ -154,6 +154,86 @@ class HeadingTest {
     assertEquals(renamedHeading, heading.rename(Map.of("a0", "aa0")));
   }
 
+  @Test
+  void projectionOfNonExistingAttributesRaisesException() {
+    Heading heading = new Heading(idAtts(2));
+    assertThrows(IllegalArgumentException.class, () -> heading.project(Set.of("nonexisting")));
+  }
+
+  @Test
+  void projectionOfSingleAttributeResultsInNewHeadingContainingProjectedField() {
+    Heading heading = new Heading(idAtts(2));
+    Heading result = new Heading(idAtts(1));
+
+    assertEquals(result, heading.project(Set.of("id0")));
+  }
+
+  @Test
+  void projectionOfTwoFieldsKeepsOrder() {
+    Heading heading = new Heading(idAtts(3));
+    Heading result = new Heading(List.of(createAtt("id0", Domain.ID), createAtt("id2", Domain.ID)));
+
+    assertEquals(result, heading.project(Set.of("id0","id2")));
+  }
+
+  @Test
+  void joiningNonOverlappingHeadingsConcatenatesBoth() {
+    Heading left = new Heading(idAtts(2));
+    Heading right = new Heading(intAtts(2));
+
+    Heading result = new Heading(append(idAtts(2), intAtts(2)));
+    assertEquals(result, left.join(right));
+  }
+
+  @Test
+  void joiningUnionCompatibleHeadingsResultsInSame() {
+    Heading heading = new Heading(idAtts(2));
+
+    assertEquals(heading, heading.join(heading));
+  }
+
+  @Test
+  void joiningSharedAttributesResultsInCombinedHeader() {
+    Heading left = new Heading(idAtts(3));
+    Heading right = new Heading(append(idAtts(2),intAtts(3)));
+
+    Heading result = new Heading(append(idAtts(3), intAtts(3)));
+
+    assertEquals(result, left.join(right));
+  }
+
+  @Test
+  void intersectingAttributeNamesIsEmptyWhenThereIsNoOverlap() {
+    Heading heading = new Heading(idAtts(3));
+    Heading other = new Heading(intAtts(3));
+
+    assertEquals(Collections.emptySet(), heading.getIntersectingAttributeNames(other));
+  }
+
+  @Test
+  void intersectionOnlyContainsSharedFields() {
+    Heading left = new Heading(idAtts(4));
+    Heading right = new Heading(append(idAtts(2), intAtts(2)));
+
+    assertEquals(Set.of("id0","id1"), left.getIntersectingAttributeNames(right));
+  }
+
+  @Test
+  void intersectionIsCommutative() {
+    Heading left = new Heading(idAtts(4));
+    Heading right = new Heading(append(idAtts(2), intAtts(2)));
+
+    assertEquals(left.getIntersectingAttributeNames(right), right.getIntersectingAttributeNames(left));
+  }
+
+  @Test
+  void intersectionOfUnionCompatibleHeadersIsTheSame() {
+    Heading left = new Heading(idAtts(2));
+    Heading right = new Heading(idAtts(2));
+
+    assertEquals(2, left.getIntersectingAttributeNames(right).size());
+  }
+
   private List<Attribute> append(List<Attribute> base, List<Attribute> other) {
     base.addAll(other);
     return base;

@@ -110,7 +110,7 @@ public abstract class AbstractRelation implements Relation {
 
   @Override
   public Relation product(@NotNull Relation other) {
-    if (! heading.intersect(other.getHeading()).isEmpty()) {
+    if (! heading.getIntersectingAttributeNames(other.getHeading()).isEmpty()) {
       throw new IllegalArgumentException("There are overlapping fields. Can not perform cross product");
     }
 

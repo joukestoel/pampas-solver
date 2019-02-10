@@ -100,7 +100,7 @@ public class Heading implements Iterable<Attribute> {
     return attributes.get(index).getName();
   }
 
-  Domain getDomainAt(int index) {
+  public Domain getDomainAt(int index) {
     if (index < 0 || index >= arity()) {
       throw new IllegalArgumentException("Provided index is outside the arity of the relation");
     }
@@ -146,7 +146,7 @@ public class Heading implements Iterable<Attribute> {
    * Creates a new heading with some attributes projected.
    *
    * @param projectedAttributes the attributes to project out of the heading.
-   * @requires \forall String a: projectedFields.contains(a) | attributes.has(a)
+   * @requires (\forall String a | projectedFields.contains(a) | attributes.has(a))
    * @return new {@link Heading} containing only the projected attributes.
    * @throws IllegalArgumentException if
    *  not all attributes in the {@code projectedFields} were part of the original heading
@@ -181,7 +181,7 @@ public class Heading implements Iterable<Attribute> {
     return new Heading(joinedFields);
   }
 
-  public Set<String> intersect(@NotNull Heading other) {
+  public Set<String> getIntersectingAttributeNames(@NotNull Heading other) {
     Set<String> fieldNames = getAttributeNamesOnly();
     fieldNames.retainAll(other.getAttributeNamesOnly());
     return fieldNames;
@@ -211,7 +211,7 @@ public class Heading implements Iterable<Attribute> {
   }
 
   private Set<String> getAttributeNamesOnly() {
-    return attributes.stream()
+    return attributesAsSet.stream()
             .map(Attribute::getName)
             .collect(Collectors.toSet());
   }

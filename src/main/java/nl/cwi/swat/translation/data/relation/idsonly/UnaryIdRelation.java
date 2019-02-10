@@ -39,7 +39,7 @@ public class UnaryIdRelation extends IdsOnlyRelation {
 
   @Override
   public Relation naturalJoin(@NotNull Relation other) {
-    java.util.Set<String> joiningFieldNames = heading.intersect(other.getHeading());
+    java.util.Set<String> joiningFieldNames = heading.getIntersectingAttributeNames(other.getHeading());
     java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 
     if (joiningFieldNames.isEmpty()) {
