@@ -1,168 +1,49 @@
 package nl.cwi.swat.translation.data.row;
 
+import com.pholser.junit.quickcheck.Property;
+import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import nl.cwi.swat.smtlogic.Expression;
 import nl.cwi.swat.smtlogic.IdAtom;
-import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class TupleTest {
+@RunWith(JUnitQuickcheck.class)
+public class TupleTest {
 
-  @Test
-  void zeroAttributesTupleHasZeroLength() {
-    assertEquals(0, create(0).arity());
+  @Property
+  public void twoTuplesWithSameAttributesAreEqual(@InRange(minInt = 0, maxInt = 50) int arity) {
+    assertEquals(create(arity), create(arity));
   }
 
-  @Test
-  void zeroAttributesTupleCanBeIterated() {
-    checkIterable(create(0), 0);
+  @Property
+  public void arityIsEqualToNumberOfAttributesInTuple(@InRange(minInt = 0, maxInt = 50) int arity) {
+    assertEquals(arity, create(arity).arity());
   }
 
-  @Test
-  void cantGetAttributesOfZeroAttributesTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(0).getAttributeAt(0));
+  @Property
+  public void tuplesAreIterable(@InRange(minInt = 0, maxInt = 50) int arity) {
+    checkIterable(create(arity), arity);
   }
 
-  @Test
-  void twoZeroTuplesMustBeEqual() {
-    assertEquals(create(0),create(0));
+  @Property
+  public void gettingAttributesOutsideBoundsThrowsAnException(@InRange(minInt = 0, maxInt = 50) int arity) {
+    assertThrows(IllegalArgumentException.class, () -> create(arity).getAttributeAt(arity+1));
   }
 
-  @Test
-  void unaryTupleIsOfSizeOne() {
-    assertEquals(1, create(1).arity());
+  @Property
+  public void tuplesAreOrdered(@InRange(minInt = 0, maxInt = 50) int arity)  {
+    checkOrder(create(arity));
   }
 
-  @Test
-  void unaryTupleCanBeIterated() {
-    checkIterable(create(1),1);
-  }
+  @Property
+  public void tuplesOfDifferentArityAreNotEqual(@InRange(minInt = 0, maxInt = 50) int arity1, @InRange(minInt = 0, maxInt = 50) int arity2) {
+    assumeThat(arity1, not(arity2));
 
-  @Test
-  void canGetFirstAttributeOfAUnaryTuple() {
-    assertEquals(id("0"), create(1).getAttributeAt(0));
-  }
-
-  @Test
-  void noSecondAttributeInAUnaryTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(1).getAttributeAt(1));
-  }
-
-  @Test
-  void twoUnaryTuplesContainingSameDataAreEqual() {
-    assertEquals(create(1),create(1));
-  }
-
-  @Test
-  void twoUnaryTuplesContainingDifferentDataAreNotEqual() {
-    assertNotEquals(create(1),create(id("a'")));
-  }
-
-  @Test
-  void tuplessOfDifferentSizesAreNotEqual() {
-    for (int i = 0; i < 6; i++) {
-      assertNotEquals(create(i), create(i + 1));
-    }
-  }
-
-  @Test
-  void binaryTupleIsOfSizeTwo() {
-    assertEquals(2, create(2).arity());
-  }
-
-  @Test
-  void binaryTupleContainsTwoAttributes() {
-    checkIterable(create(2),2);
-  }
-
-  @Test
-  void binaryTupleIsOrdered() {
-    checkOrder(create(2));
-  }
-
-  @Test
-  void noMoreAttributesInBinaryTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(2).getAttributeAt(2));
-  }
-
-  @Test
-  void ternaryTupleIsOfSizeThree() {
-    assertEquals(3, create(3).arity());
-  }
-
-  @Test
-  void ternaryTupleContainsThreeAttributes() {
-    checkIterable(create(3),3);
-  }
-
-  @Test
-  void ternaryTupleIsOrdered() {
-    checkOrder(create(3));
-  }
-
-  @Test
-  void noMoreAttributesInTernaryTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(3).getAttributeAt(3));
-  }
-
-  @Test
-  void fourAttributeTupleIsOfSizeFour() {
-    assertEquals(4, create(4).arity());
-  }
-
-  @Test
-  void fourAttributeTupleContainsFourAttributes() {
-    checkIterable(create(4),4);
-  }
-
-  @Test
-  void fourAttributeTupleeIsOrdered() {
-    checkOrder(create(4));
-  }
-
-  @Test
-  void noMoreAttributesInFourAttributesTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(4).getAttributeAt(4));
-  }
-
-  @Test
-  void fiveAttributeTupleIsOfSizeFive() {
-    assertEquals(5, create(5).arity());
-  }
-
-  @Test
-  void fiveAttributeTupleContainsFiveAttributes() {
-    checkIterable(create(5),5);
-  }
-
-  @Test
-  void fiveAttributesTupleIsOrdered() {
-    checkOrder(create(5));
-  }
-
-  @Test
-  void noMoreAttributesInFiveAttributesTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(5).getAttributeAt(5));
-  }
-
-  @Test
-  void naryTupleCanBeOfSizeTwenty() {
-    assertEquals(20, create(20).arity());
-  }
-
-  @Test
-  void naryTupleCanContainTwentyAttributes() {
-    checkIterable(create(20),20);
-  }
-
-  @Test
-  void naryTupleIsOrdered() {
-    checkOrder(create(20));
-  }
-
-  @Test
-  void noMoreAttributesInNaryTuple() {
-    assertThrows(IllegalArgumentException.class, () -> create(20).getAttributeAt(20));
+    assertNotEquals(create(arity1), create(arity2));
   }
 
   //// Helper methods below
