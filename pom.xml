@@ -26,7 +26,7 @@
     <dependency>
       <groupId>io.usethesource</groupId>
       <artifactId>capsule</artifactId>
-      <version>0.6.1</version>
+      <version>0.6.3</version>
     </dependency>
 
     <!-- Z3 SMT solver -->
