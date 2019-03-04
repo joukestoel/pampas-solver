@@ -37,6 +37,10 @@ public class TupleFactory {
    *   {@code attributeIndices} list
    */
   public static Tuple buildPartialTuple(@NotNull final Tuple original, @NotNull final Set<Integer> attributeIndices) {
+    if (attributeIndices.size() > original.arity()) {
+      throw new IllegalArgumentException("Can not build a partial tuple with more attributes than the original");
+    }
+
     final Expression[] partialAtts = new Expression[attributeIndices.size()];
 
     int newIndex = 0;

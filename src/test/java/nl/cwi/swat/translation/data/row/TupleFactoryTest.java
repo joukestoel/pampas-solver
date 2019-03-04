@@ -1,68 +1,67 @@
 package nl.cwi.swat.translation.data.row;
 
+import com.pholser.junit.quickcheck.Property;
+import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.generator.Size;
+import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import nl.cwi.swat.smtlogic.Expression;
 import nl.cwi.swat.smtlogic.IdAtom;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Collections;
 import java.util.Set;
 
 import static nl.cwi.swat.translation.data.row.TupleFactory.buildTuple;
 import static nl.cwi.swat.translation.data.row.TupleFactory.merge;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class TupleFactoryTest {
+@RunWith(JUnitQuickcheck.class)
+public class TupleFactoryTest {
 
-  @Test
-  void emptyTuple() {
-    assertEquals(0, buildTuple().arity());
-  }
-
-  @Test
-  void buildUnaryTuple() {
-    assertEquals(1, buildTuple(atts(1)).arity());
-  }
-
-  @Test
-  void buildBinaryTuple() {
-    assertEquals(2, buildTuple(atts(2)).arity());
-  }
-
-  @Test
-  void buildTernaryTuple() {
-    assertEquals(3, buildTuple(atts(3)).arity());
-  }
-
-  @Test
-  void buildFourAttributesTuple() {
-    assertEquals(4, buildTuple(atts(4)).arity());
-  }
-
-  @Test
-  void buildFiveAttributesTuple() {
-    assertEquals(5, buildTuple(atts(5)).arity());
-  }
-
-  @Test
-  void buildMoreTHenFiveAttributesTuples() {
-    for (int i = 6; i < 20; i++) {
-      Tuple tuple = buildTuple(atts(i));
-      assertEquals(i, tuple.arity());
-      assertTrue(tuple instanceof NaryTuple);
+  @Property
+  public void tuplesWithArityUpToFiveAreOfSpecialisedType(@InRange(minInt = 0, maxInt = 50) int arity) {
+    Tuple tuple = buildTuple(atts(arity));
+    switch (arity) {
+      case 0: assertTrue(tuple instanceof EmptyTuple); break;
+      case 1: assertTrue(tuple instanceof UnaryTuple); break;
+      case 2: assertTrue(tuple instanceof BinaryTuple); break;
+      case 3: assertTrue(tuple instanceof TernaryTuple); break;
+      case 4: assertTrue(tuple instanceof FourAttributesTuple); break;
+      case 5: assertTrue(tuple instanceof FiveAttributesTuple); break;
+      default: assertTrue(tuple instanceof NaryTuple);
     }
   }
 
-  @Test
-  void partialTupleWhenFilteringEverythingLeavesTheEmptyTuple() {
-    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(1)), Collections.emptySet());
+  @Property
+  public void arityIsEqualToNumberOfAttributesInTuple(@InRange(minInt = 0, maxInt = 50) int arity) {
+    assertEquals(arity, buildTuple(atts(arity)).arity());
+  }
+
+  @Property
+  public void buildingAPartialTupleWhenFilteringEverythingLeavesTheEmptyTuple(@InRange(minInt = 0, maxInt = 50) int arity) {
+    Tuple tuple = TupleFactory.buildPartialTuple(buildTuple(atts(arity)), Collections.emptySet());
     assertEquals(0, tuple.arity());
     assertTrue(tuple instanceof EmptyTuple);
   }
 
-  @Test
-  void partialTupleWithIndicesOutsideBoundsThrowsException() {
-    assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(1)), Set.of(1)));
+  @Property
+  public void buildingAPartialTupleWithIndicesOutsideBoundsThrowsException(@InRange(minInt = 0, maxInt = 50) int arity, Set<@InRange(minInt = 0, maxInt = 70) Integer> indices) {
+    assumeThat(indices, hasItem(arity + 1));
+    assumeThat(indices, hasSize(arity));
+
+    System.out.println(arity);
+    System.out.println(indices);
+
+    assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(arity)), indices));
   }
+
+//  @Property
+//  public void buildingAPartialTupleWith()
+
 
   @Test
   void partialTupleTruncatesOriginalTuple() {
