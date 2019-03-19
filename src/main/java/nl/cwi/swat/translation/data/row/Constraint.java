@@ -1,12 +1,11 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.smtlogic.BooleanConstant;
-import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
+import nl.cwi.swat.formulacircuit.Formula;
 
 public interface Constraint {
   Formula exists();
   Formula attributeConstraints();
-  Formula combined();
 
   class FullConstraint implements Constraint {
     private final Formula exists;
@@ -25,11 +24,6 @@ public interface Constraint {
     @Override
     public Formula attributeConstraints() {
       return attributeConstraints;
-    }
-
-    @Override
-    public Formula combined() {
-      return null;
     }
 
     @Override
@@ -66,11 +60,6 @@ public interface Constraint {
     @Override
     public Formula attributeConstraints() {
       return BooleanConstant.TRUE;
-    }
-
-    @Override
-    public Formula combined() {
-      return exists;
     }
 
     @Override

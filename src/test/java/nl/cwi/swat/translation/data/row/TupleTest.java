@@ -3,8 +3,8 @@ package nl.cwi.swat.translation.data.row;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import nl.cwi.swat.smtlogic.Expression;
-import nl.cwi.swat.smtlogic.IdAtom;
+import nl.cwi.swat.formulacircuit.Expression;
+import nl.cwi.swat.formulacircuit.rel.IdConstant;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -49,7 +49,7 @@ public class TupleTest {
   //// Helper methods below
 
   private Expression id(String val) {
-    return new IdAtom(val);
+    return new IdConstant(0, val);
   }
 
   private Tuple create(int size) {

@@ -1,7 +1,7 @@
 package nl.cwi.swat;
 
 import dagger.Component;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.TranslationCache;
 import nl.cwi.swat.translation.Translator;
 

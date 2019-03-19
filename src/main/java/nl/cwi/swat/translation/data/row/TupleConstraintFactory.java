@@ -1,8 +1,8 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.smtlogic.BooleanConstant;
-import nl.cwi.swat.smtlogic.Formula;
-import org.jetbrains.annotations.NotNull;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
+import nl.cwi.swat.formulacircuit.Formula;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class TupleConstraintFactory {
   public static final Constraint ALL_TRUE = new Constraint() {
@@ -15,18 +15,13 @@ public class TupleConstraintFactory {
     public Formula attributeConstraints() {
       return BooleanConstant.TRUE;
     }
-
-    @Override
-    public Formula combined() {
-      return BooleanConstant.TRUE;
-    }
   };
 
-  public static Constraint buildConstraint(@NotNull final Formula exists) {
+  public static Constraint buildConstraint(@NonNull final Formula exists) {
     return new Constraint.ExistsOnlyConstraint(exists);
   }
 
-  public static Constraint buildConstraint(@NotNull final Formula exists, @NotNull final Formula attributeConstraints) {
+  public static Constraint buildConstraint(@NonNull final Formula exists, @NonNull final Formula attributeConstraints) {
     return new Constraint.FullConstraint(exists, attributeConstraints);
   }
 }

@@ -4,11 +4,9 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dagger.Module;
 import dagger.Provides;
-import io.usethesource.capsule.Set;
-import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaFactory;
-import nl.cwi.swat.smtlogic.SimpleFormulaFactory;
-import nl.cwi.swat.smtlogic.SimplificationFactory;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
+import nl.cwi.swat.formulacircuit.MinimalReducingCircuitFactory;
 import nl.cwi.swat.translation.TranslationCache;
 import nl.cwi.swat.translation.data.relation.Relation;
 
@@ -30,16 +28,8 @@ public class Config {
 
   @Provides
   @Singleton
-  public SimplificationFactory provideSimplificationFactory() {
-    Cache<SimplificationFactory.FormulaCacheKey, Set.Transient<Formula>> formulaCache = Caffeine.newBuilder().recordStats().build();
-
-    return new SimplificationFactory(reductionDepth, formulaCache);
-  }
-
-  @Provides
-  @Singleton
   public FormulaFactory provideFormulaFactory() {
-    return new SimpleFormulaFactory();
+    return new MinimalReducingCircuitFactory();
   }
 }
 

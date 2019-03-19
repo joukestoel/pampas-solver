@@ -4,8 +4,8 @@ import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.generator.Size;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import nl.cwi.swat.smtlogic.Expression;
-import nl.cwi.swat.smtlogic.IdAtom;
+import nl.cwi.swat.formulacircuit.Expression;
+import nl.cwi.swat.formulacircuit.rel.IdConstant;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -130,6 +130,6 @@ public class TupleFactoryTest {
   }
 
   private Expression id(String val) {
-    return new IdAtom(val);
+    return new IdConstant(0, val);
   }
 }

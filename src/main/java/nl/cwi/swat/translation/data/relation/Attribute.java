@@ -1,7 +1,7 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Represents a single attribute definition.
@@ -16,7 +16,7 @@ public class Attribute {
    * @param name field name
    * @param domain domain of the field
    */
-  Attribute(@NotNull final String name, @NotNull final Domain domain) {
+  Attribute(@NonNull final String name, @NonNull final Domain domain) {
     this.name = name;
     this.domain = domain;
   }

@@ -1,12 +1,12 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
-import nl.cwi.swat.smtlogic.Expression;
-import nl.cwi.swat.smtlogic.IdAtom;
-import nl.cwi.swat.smtlogic.ints.IntConstant;
-import nl.cwi.swat.smtlogic.ints.IntVariable;
+import nl.cwi.swat.formulacircuit.Expression;
+import nl.cwi.swat.formulacircuit.ints.IntegerConstant;
+import nl.cwi.swat.formulacircuit.ints.IntegerVariable;
+import nl.cwi.swat.formulacircuit.rel.IdConstant;
 import nl.cwi.swat.translation.data.row.Tuple;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,7 +26,7 @@ public class Heading implements Iterable<Attribute> {
 
   private final boolean idsOnly;
 
-  Heading(@NotNull List<Attribute> attributes) {
+  Heading(@NonNull List<Attribute> attributes) {
     this.attributes = Collections.unmodifiableList(attributes);
     this.attributesAsSet = Collections.unmodifiableSet(new HashSet<>(this.attributes));
 
@@ -38,7 +38,7 @@ public class Heading implements Iterable<Attribute> {
     idsOnly = onlyOfIdDomain(attributes);
   }
 
-  private boolean onlyOfIdDomain(@NotNull List<Attribute> attributes) {
+  private boolean onlyOfIdDomain(@NonNull List<Attribute> attributes) {
     for (Attribute at : attributes) {
       if (Domain.ID != at.getDomain()) {
         return false;
@@ -52,7 +52,7 @@ public class Heading implements Iterable<Attribute> {
     return attributes.size();
   }
 
-  boolean isUnionCompatible(@NotNull Heading other) {
+  boolean isUnionCompatible(@NonNull Heading other) {
     if (other.arity() != this.arity()) {
       return false;
     }
@@ -60,7 +60,7 @@ public class Heading implements Iterable<Attribute> {
     return attributesAsSet.equals(other.attributesAsSet);
   }
 
-  public Set<Integer> getAttributeIndices(@NotNull Set<String> attributeNames) {
+  public Set<Integer> getAttributeIndices(@NonNull Set<String> attributeNames) {
     Set<Integer> indices = new HashSet<>(attributeNames.size());
 
     for (int i = 0; i < attributes.size(); i++) {
@@ -76,7 +76,7 @@ public class Heading implements Iterable<Attribute> {
     return indices;
   }
 
-  @NotNull
+  @NonNull
   public Iterator<Attribute> iterator() {
     return attributes.iterator();
   }
@@ -117,7 +117,7 @@ public class Heading implements Iterable<Attribute> {
    * @throws IllegalArgumentException if
    *  not all attributes in the {@code renamedFields} param were part of the original heading
    */
-  public Heading rename(@NotNull Map<String, String> renamedAttributes) {
+  public Heading rename(@NonNull Map<String, String> renamedAttributes) {
     if (renamedAttributes.size() > arity()) {
       throw new IllegalArgumentException("The number of attributes to rename is larger than the number of attributes in the heading");
     }
@@ -151,7 +151,7 @@ public class Heading implements Iterable<Attribute> {
    * @throws IllegalArgumentException if
    *  not all attributes in the {@code projectedFields} were part of the original heading
    */
-  public Heading project(@NotNull Set<String> projectedAttributes) {
+  public Heading project(@NonNull Set<String> projectedAttributes) {
     int nrOfProjectedFields = 0;
 
     List<Attribute> newFields = new ArrayList<>(projectedAttributes.size());
@@ -170,7 +170,7 @@ public class Heading implements Iterable<Attribute> {
     return new Heading(newFields);
   }
 
-  public Heading join(@NotNull Heading other) {
+  public Heading join(@NonNull Heading other) {
     ArrayList<Attribute> joinedFields = new ArrayList<>(attributes);
     for (Attribute fd : other) {
       if (!joinedFields.contains(fd)) {
@@ -181,7 +181,7 @@ public class Heading implements Iterable<Attribute> {
     return new Heading(joinedFields);
   }
 
-  public Set<String> getIntersectingAttributeNames(@NotNull Heading other) {
+  public Set<String> getIntersectingAttributeNames(@NonNull Heading other) {
     Set<String> fieldNames = getAttributeNamesOnly();
     fieldNames.retainAll(other.getAttributeNamesOnly());
     return fieldNames;
@@ -191,7 +191,7 @@ public class Heading implements Iterable<Attribute> {
     return idsOnly;
   }
 
-  boolean isTupleCompatible(@NotNull Tuple tuple) {
+  boolean isTupleCompatible(@NonNull Tuple tuple) {
     if (tuple.arity() != arity()) {
       return false;
     }
@@ -200,9 +200,9 @@ public class Heading implements Iterable<Attribute> {
       Attribute fd = attributes.get(i);
       Expression att = tuple.getAttributeAt(i);
 
-      if (fd.getDomain() == Domain.ID && !(att instanceof IdAtom)) {
+      if (fd.getDomain() == Domain.ID && !(att instanceof IdConstant)) {
         return false;
-      } else if (fd.getDomain() == Domain.INT && (!(att instanceof IntConstant || att instanceof IntVariable))) {
+      } else if (fd.getDomain() == Domain.INT && (!(att instanceof IntegerConstant || att instanceof IntegerVariable))) {
         return false;
       }
     }

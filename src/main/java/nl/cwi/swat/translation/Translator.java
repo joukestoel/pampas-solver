@@ -2,13 +2,14 @@ package nl.cwi.swat.translation;
 
 import nl.cwi.swat.ast.*;
 import nl.cwi.swat.ast.relational.*;
-//import nl.cwi.swat.ast.relational.Formula;
 import nl.cwi.swat.ast.relational.Literal;
-import nl.cwi.swat.smtlogic.*;
-import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
+import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.row.Tuple;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,8 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static nl.cwi.swat.smtlogic.BooleanConstant.FALSE;
-import static nl.cwi.swat.smtlogic.BooleanConstant.TRUE;
+import static nl.cwi.swat.formulacircuit.bool.BooleanConstant.FALSE;
+import static nl.cwi.swat.formulacircuit.bool.BooleanConstant.TRUE;
 
 @Singleton
 public class Translator implements TranslationVisitor<Formula, Relation, Literal> {
@@ -29,26 +30,26 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   private Environment env;
 
   @Inject
-  public Translator(@NotNull FormulaFactory ffactory, @NotNull TranslationCache cache) {
+  public Translator(@NonNull FormulaFactory ffactory, @NonNull TranslationCache cache) {
     this.ffactory = ffactory;
     this.cache = cache;
   }
 
-  public Formula translate(@NotNull Environment env, Set<nl.cwi.swat.ast.relational.Formula> constraints) {
+  public Formula translate(@NonNull Environment env, Set<nl.cwi.swat.ast.relational.Formula> constraints) {
     this.env = env;
 
-    FormulaAccumulator accumulator = FormulaAccumulator.AND();
+    BooleanAccumulator accumulator = BooleanAccumulator.AND();
     Iterator<nl.cwi.swat.ast.relational.Formula> it = constraints.iterator();
 
     while (it.hasNext() && !accumulator.isShortCircuited()) {
       accumulator.add(it.next().accept(this));
     }
 
-    return ffactory.accumulate(accumulator);
+    return ffactory.accumulateBools(accumulator);
   }
 
   @Override
-  public Formula visit(@NotNull Subset subset) {
+  public Formula visit(@NonNull Subset subset) {
     Optional<Formula> cached = cache.fetch(subset, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -61,7 +62,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull Equal equal) {
+  public Formula visit(@NonNull Equal equal) {
     Optional<Formula> cached = cache.fetch(equal, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -74,7 +75,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull And and) {
+  public Formula visit(@NonNull And and) {
     Optional<Formula> cached = cache.fetch(and, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -90,7 +91,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull Or or) {
+  public Formula visit(@NonNull Or or) {
     Optional<Formula> cached = cache.fetch(or, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -106,21 +107,21 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull Forall forall) {
+  public Formula visit(@NonNull Forall forall) {
     Optional<Formula> cached = cache.fetch(forall, env);
     if (cached.isPresent()) {
       return cached.get();
     }
 
-    final FormulaAccumulator accumulator = FormulaAccumulator.AND();
+    final BooleanAccumulator accumulator = BooleanAccumulator.AND();
     translateForall(forall.getDecls(), forall.getFormula(), 0, BooleanConstant.FALSE, accumulator);
 
-    return cache.storeAndReturn(forall, env, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(forall, env, ffactory.accumulateBools(accumulator));
   }
 
-  private void translateForall(@NotNull List<Declaration> decls, @NotNull nl.cwi.swat.ast.relational.Formula formula,
-                               int currentDecl, @NotNull Formula declConstraintValue,
-                               @NotNull FormulaAccumulator accumulator) {
+  private void translateForall(@NonNull List<Declaration> decls, nl.cwi.swat.ast.relational.Formula formula,
+                               int currentDecl, @NonNull Formula declConstraintValue,
+                               @NonNull BooleanAccumulator accumulator) {
     if (accumulator.isShortCircuited()) {
       return;
     }
@@ -152,7 +153,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull Some some) {
+  public Formula visit(@NonNull Some some) {
     Optional<Formula> cached = cache.fetch(some, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -165,17 +166,17 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
     Iterator<Tuple> it = r.iterator();
 
-    FormulaAccumulator accumulator = FormulaAccumulator.OR();
+    BooleanAccumulator accumulator = BooleanAccumulator.OR();
 
     while (it.hasNext() && !accumulator.isShortCircuited()) {
       accumulator.add(r.getCombinedConstraints(it.next()));
     }
 
-    return cache.storeAndReturn(some, env, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(some, env, ffactory.accumulateBools(accumulator));
   }
 
   @Override
-  public Formula visit(@NotNull No no) {
+  public Formula visit(@NonNull No no) {
     Optional<Formula> cached = cache.fetch(no, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -186,7 +187,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
   }
 
   @Override
-  public Formula visit(@NotNull One one) {
+  public Formula visit(@NonNull One one) {
     Optional<Formula> cached = cache.fetch(one, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -197,7 +198,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
       return FALSE;
     }
 
-    FormulaAccumulator accumulator = FormulaAccumulator.AND();
+    BooleanAccumulator accumulator = BooleanAccumulator.AND();
     Formula partial = FALSE;
 
     Iterator<Tuple> it = r.iterator();
@@ -209,11 +210,11 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
 
     accumulator.add(partial);
 
-    return cache.storeAndReturn(one, env, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(one, env, ffactory.accumulateBools(accumulator));
   }
 
   @Override
-  public Formula visit(@NotNull Lone lone) {
+  public Formula visit(@NonNull Lone lone) {
     Optional<Formula> cached = cache.fetch(lone, env);
     if (cached.isPresent()) {
       return cached.get();
@@ -224,7 +225,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
       return TRUE;
     }
 
-    FormulaAccumulator accumulator = FormulaAccumulator.OR();
+    BooleanAccumulator accumulator = BooleanAccumulator.OR();
     Formula partial = FALSE;
 
     Iterator<Tuple> it = r.iterator();
@@ -235,7 +236,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
       partial = ffactory.or(partial, f);
     }
 
-    return cache.storeAndReturn(lone, env, ffactory.accumulate(accumulator));
+    return cache.storeAndReturn(lone, env, ffactory.accumulateBools(accumulator));
   }
 
   @Override

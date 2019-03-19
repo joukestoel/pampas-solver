@@ -4,22 +4,22 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieMap;
-import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import nl.cwi.swat.translation.data.row.*;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Optional;
 
 public class UnaryIdRelation extends IdsOnlyRelation {
 
-  public UnaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                         @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                         @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
+  public UnaryIdRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                         @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                         @NonNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
 
     if (heading.arity() != 1) {
@@ -33,12 +33,12 @@ public class UnaryIdRelation extends IdsOnlyRelation {
   }
 
   @Override
-  public Relation project(@NotNull java.util.Set<String> projectedAttributes) {
+  public Relation project(java.util.Set<String> projectedAttributes) {
     throw new UnsupportedOperationException("Projection of an unary relation is pointless");
   }
 
   @Override
-  public Relation naturalJoin(@NotNull Relation other) {
+  public Relation naturalJoin(@NonNull Relation other) {
     java.util.Set<String> joiningFieldNames = heading.getIntersectingAttributeNames(other.getHeading());
     java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 

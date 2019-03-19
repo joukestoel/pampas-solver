@@ -1,7 +1,7 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.smtlogic.Expression;
-import org.jetbrains.annotations.NotNull;
+import nl.cwi.swat.formulacircuit.Expression;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -16,7 +16,7 @@ public class TupleFactory {
    * @param attributes an array of the attributes that are part of the new row
    * @return a row of arity (@code attributes.length} containing the passed in {@code attributes}
    */
-  public static Tuple buildTuple(@NotNull final Expression... attributes) {
+  public static Tuple buildTuple(@NonNull final Expression... attributes) {
     switch (attributes.length) {
       case 0: return EmptyTuple.EMPTY;
       case 1: return new UnaryTuple(attributes[0]);
@@ -36,7 +36,7 @@ public class TupleFactory {
    * @return a partial row containing only those attributes from the original iff its original index is contained in the
    *   {@code attributeIndices} list
    */
-  public static Tuple buildPartialTuple(@NotNull final Tuple original, @NotNull final Set<Integer> attributeIndices) {
+  public static Tuple buildPartialTuple(@NonNull final Tuple original, @NonNull final Set<Integer> attributeIndices) {
     if (attributeIndices.size() > original.arity()) {
       throw new IllegalArgumentException("Can not build a partial tuple with more attributes than the original");
     }
@@ -63,7 +63,7 @@ public class TupleFactory {
    * @return a merged tuple containing all the attributes of the {@code base} tuple and the non-skipped attributes of the {@code other} tuple
    * @throws IllegalArgumentException when the skipPosition list contains indices outside the bounds of the {@code other} tuple
    */
-  public static Tuple merge(@NotNull final Tuple base, @NotNull final Tuple other, @NotNull Set<Integer> skipPositions) {
+  public static Tuple merge(@NonNull final Tuple base, @NonNull final Tuple other, @NonNull Set<Integer> skipPositions) {
     for (int i : skipPositions) {
       if (i < 0 || i >= other.arity()) {
         throw new IllegalArgumentException("List with indices to skip contains indices outside the bounds of the 'other' row");
@@ -83,7 +83,7 @@ public class TupleFactory {
     return buildTuple(exprs);
   }
 
-  private static Expression[] getExpressions(@NotNull Tuple tuple) {
+  private static Expression[] getExpressions(@NonNull Tuple tuple) {
     final Expression[] exprs = new Expression[tuple.arity()];
 
     for (int i = 0; i < tuple.arity(); i++) {

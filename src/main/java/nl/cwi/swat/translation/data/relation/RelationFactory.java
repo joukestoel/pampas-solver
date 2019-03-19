@@ -8,13 +8,15 @@ import nl.cwi.swat.ast.ints.IntLiteral;
 import nl.cwi.swat.ast.relational.Hole;
 import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.ast.relational.Literal;
-import nl.cwi.swat.smtlogic.*;
-import nl.cwi.swat.smtlogic.ints.IntConstant;
-import nl.cwi.swat.smtlogic.ints.IntSort;
+import nl.cwi.swat.formulacircuit.Expression;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
+import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
 import nl.cwi.swat.translation.data.relation.idsonly.BinaryIdRelation;
 import nl.cwi.swat.translation.data.relation.idsonly.UnaryIdRelation;
 import nl.cwi.swat.translation.data.row.*;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +28,12 @@ public class RelationFactory {
   private final Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> indexCache;
 
   public RelationFactory(final FormulaFactory ff,
-                         @NotNull Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> indexCache) {
+                         @NonNull Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> indexCache) {
     this.ff = ff;
     this.indexCache = indexCache;
   }
 
-  public Relation buildRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows, boolean stable) {
+  public Relation buildRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows, boolean stable) {
     if (heading.containsOnlyIdAttributes()) {
       return buildIdsOnlyRelation(heading, rows);
     } else if (stable) {
@@ -41,7 +43,7 @@ public class RelationFactory {
     }
   }
 
-  private Relation buildIdsOnlyRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows) {
+  private Relation buildIdsOnlyRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows) {
     switch(heading.arity()) {
       case 1: return new UnaryIdRelation(heading, rows, this, ff, indexCache);
       case 2: return new BinaryIdRelation(heading, rows, this, ff, indexCache);
@@ -49,14 +51,14 @@ public class RelationFactory {
     }
   }
 
-  private Relation buildStableRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows) {
+  private Relation buildStableRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows) {
     switch(heading.arity()) {
 //      case 1: return new UnaryStableRelation(heading, rows, this, ff);
       default: throw new IllegalArgumentException(String.format("Unable to build an stable relation with arity %d", heading.arity()));
     }
   }
 
-  private Relation buildUnstableRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows) {
+  private Relation buildUnstableRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows) {
     switch(heading.arity()) {
       default: throw new IllegalArgumentException(String.format("Unable to build an stable relation with arity %d", heading.arity()));
     }
@@ -68,12 +70,12 @@ public class RelationFactory {
     private Builder() {
     }
 
-    public HeaderBuilder create(@NotNull  String relName) {
+    public HeaderBuilder create(@NonNull  String relName) {
       this.relName = relName;
       return new HeaderBuilder();
     }
 
-    private TupleBuilder phase1Done(@NotNull Heading heading) {
+    private TupleBuilder phase1Done(@NonNull Heading heading) {
       return new TupleBuilder(new RelationUnderConstruction(heading));
     }
 
@@ -84,7 +86,7 @@ public class RelationFactory {
         this.fields = new ArrayList<>();
       }
 
-      public HeaderBuilder add(@NotNull String name, @NotNull Domain dom) {
+      public HeaderBuilder add(@NonNull String name, @NonNull Domain dom) {
         fields.add(new Attribute(name, dom));
         return this;
       }
@@ -98,20 +100,20 @@ public class RelationFactory {
     class TupleBuilder {
       private final RelationUnderConstruction rel;
 
-      private TupleBuilder(@NotNull final RelationUnderConstruction rel) {
+      private TupleBuilder(@NonNull final RelationUnderConstruction rel) {
         this.rel = rel;
       }
 
-      public TupleBuilder lower(@NotNull Literal... values) {
+      public TupleBuilder lower(@NonNull Literal... values) {
         Tuple r = TupleFactory.buildTuple(convertToExpressions(values));
         rel.add(r, BooleanConstant.TRUE);
 
         return this;
       }
 
-      public TupleBuilder upper(@NotNull Literal... values) {
+      public TupleBuilder upper(@NonNull Literal... values) {
         Tuple r = TupleFactory.buildTuple(convertToExpressions(values));
-        rel.add(r, ff.newBoolVar(Builder.this.relName));
+        rel.add(r, ff.boolVar(Builder.this.relName));
 
         return this;
       }
@@ -120,7 +122,7 @@ public class RelationFactory {
         return RelationFactory.this.buildRelation(rel.heading, rel.build(), rel.stable);
       }
 
-      private Expression[] convertToExpressions(@NotNull Literal[] literals) {
+      private Expression[] convertToExpressions(@NonNull Literal[] literals) {
         Expression[] exprs = new Expression[literals.length];
 
         for (int i = 0; i < literals.length; i++) {
@@ -132,13 +134,15 @@ public class RelationFactory {
 
       private Expression convertLiteral(Literal literal, int pos) {
         // TODO: Maybe better to have a visitor for this
+
         if (literal instanceof Id) {
-          return new IdAtom(((Id) literal).getValue());
+          return ff.idConst(((Id) literal).getValue());
         } else if (literal instanceof IntLiteral) {
-          return new IntConstant(((IntLiteral)literal).getValue());
+          return ff.intConst(((IntLiteral)literal).getValue());
         } else if (Hole.HOLE == literal) {
+
           if (Domain.INT == rel.heading.getDomainAt(pos)) {
-            return RelationFactory.this.ff.newVar(IntSort.INT, Builder.this.relName);
+            return RelationFactory.this.ff.intVar(Builder.this.relName);
           } else {
              throw new IllegalStateException("No conversion for literal " + literal);
           }
@@ -157,13 +161,13 @@ public class RelationFactory {
     private final Set<String> partialKey;
     private final Set<Integer> partialKeyIndices;
 
-    RelationUnderConstruction(@NotNull Heading heading) {
+    RelationUnderConstruction(@NonNull Heading heading) {
       this(heading, PersistentTrieMap.of(), RelationFactory.this, RelationFactory.this.ff, RelationFactory.this.indexCache);
     }
 
-    private RelationUnderConstruction(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                                     @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                                     @NotNull Cache<IndexCacheKey, IndexedRows> indexCache) {
+    private RelationUnderConstruction(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                                     @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                                     @NonNull Cache<IndexCacheKey, IndexedRows> indexCache) {
       super(heading, rows, rf, ff, indexCache);
 
       partialKey = heading.getNamesOfIdDomainAttributes();
@@ -209,21 +213,21 @@ public class RelationFactory {
     }
 
     private Formula constraintAttributes(Tuple toBeAdded, Set<TupleAndConstraint> overlappingRows) {
-      FormulaAccumulator outerAnd = FormulaAccumulator.AND();
+      BooleanAccumulator outerAnd = BooleanAccumulator.AND();
 
       for (TupleAndConstraint rac : overlappingRows) {
         // Build a and gate constraining all the attributes to be equal
-        FormulaAccumulator innerAnd = FormulaAccumulator.AND();
+        BooleanAccumulator innerAnd = BooleanAccumulator.AND();
         for (int i = 0; i < toBeAdded.arity(); i++) {
           if (!partialKeyIndices.contains(i)) {
-            innerAnd.add(ff.eq(toBeAdded.getAttributeAt(i), rac.getTuple().getAttributeAt(i)));
+            innerAnd.add(ff.equal(toBeAdded.getAttributeAt(i), rac.getTuple().getAttributeAt(i)));
           }
         }
         // build the implication; if the other row exists -> some of the attributes must be different in order for the rows not to collapse into eachother
-        outerAnd.add(ff.or(rac.getConstraint().exists().negation(), ff.accumulate(innerAnd).negation()));
+        outerAnd.add(ff.or(rac.getConstraint().exists().negation(), ff.accumulateBools(innerAnd).negation()));
       }
 
-      return ff.accumulate(outerAnd);
+      return ff.accumulateBools(outerAnd);
     }
 
     @Override

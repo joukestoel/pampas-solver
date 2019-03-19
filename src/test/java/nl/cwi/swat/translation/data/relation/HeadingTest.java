@@ -1,7 +1,7 @@
 package nl.cwi.swat.translation.data.relation;
 
 import nl.cwi.swat.ast.Domain;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -247,7 +247,7 @@ class HeadingTest {
     return createAtts(nr, Domain.INT, "int");
   }
 
-  @NotNull
+  @NonNull
   private List<Attribute> createAtts(int nr, Domain d, String prefix) {
     List<Attribute> fields = new ArrayList<>(nr);
 
@@ -258,7 +258,7 @@ class HeadingTest {
     return fields;
   }
 
-  @NotNull
+  @NonNull
   private Attribute createAtt(String name, Domain d) {
     return new Attribute(name, d);
   }

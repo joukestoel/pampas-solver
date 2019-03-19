@@ -1,12 +1,12 @@
 package nl.cwi.swat.translation.data.row;
 
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class TupleAndConstraint {
   private final Tuple tuple;
   private final Constraint constraint;
 
-  public TupleAndConstraint(@NotNull Tuple tuple, @NotNull Constraint constraint) {
+  public TupleAndConstraint(@NonNull Tuple tuple, @NonNull Constraint constraint) {
     this.tuple = tuple;
     this.constraint = constraint;
   }

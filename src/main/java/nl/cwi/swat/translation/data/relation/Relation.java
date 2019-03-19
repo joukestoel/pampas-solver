@@ -1,6 +1,6 @@
 package nl.cwi.swat.translation.data.relation;
 
-import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.Constraint;
 

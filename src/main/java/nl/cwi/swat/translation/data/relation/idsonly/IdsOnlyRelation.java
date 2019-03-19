@@ -4,25 +4,25 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieMap;
-import nl.cwi.swat.smtlogic.BooleanConstant;
-import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaAccumulator;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import nl.cwi.swat.translation.data.row.*;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
 import java.util.Optional;
 
 public abstract class IdsOnlyRelation extends AbstractRelation {
 
-  IdsOnlyRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                  @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                  @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
+  IdsOnlyRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                  @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                  @NonNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
   }
 
@@ -32,24 +32,24 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Relation rename(@NotNull java.util.Map<String, String> renamings) {
+  public Relation rename(java.util.Map<String, String> renamings) {
     return rf.buildRelation(heading.rename(renamings), rows, true);
   }
 
-  private void checkUnionCompatibility(@NotNull Relation other) {
+  private void checkUnionCompatibility(@NonNull Relation other) {
     if (!unionCompatible(other)) {
       throw new IllegalArgumentException("Other relation is not union compatible with this relation");
     }
   }
 
-  private void checkType(@NotNull Relation other) {
+  private void checkType(@NonNull Relation other) {
     if (!(other instanceof IdsOnlyRelation)) {
       throw new IllegalArgumentException("Can only union other id only relations");
     }
   }
 
   @Override
-  public Relation union(@NotNull Relation other) {
+  public Relation union(@NonNull Relation other) {
     checkUnionCompatibility(other);
     checkType(other);
 
@@ -86,7 +86,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
 
   @Override
-  public Relation intersect(@NotNull Relation other) {
+  public Relation intersect(@NonNull Relation other) {
     checkUnionCompatibility(other);
     checkType(other);
 
@@ -119,7 +119,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Relation difference(@NotNull Relation other) {
+  public Relation difference(@NonNull Relation other) {
     checkUnionCompatibility(other);
     checkType(other);
 
@@ -144,13 +144,13 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Formula subset(@NotNull Relation other) {
+  public Formula subset(@NonNull Relation other) {
     checkUnionCompatibility(other);
     checkType(other);
 
     IdsOnlyRelation otherRel = (IdsOnlyRelation)other;
 
-    FormulaAccumulator acc = FormulaAccumulator.AND();
+    BooleanAccumulator acc = BooleanAccumulator.AND();
 
     Iterator<Tuple> rowIt = rows.keyIterator();
     while (rowIt.hasNext() && !acc.isShortCircuited()) {
@@ -158,17 +158,17 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
       Constraint oc = otherRel.rows.get(current);
       if (oc != null) {
-        acc.add(ff.or(rows.get(current).combined().negation(), oc.combined()));
+        acc.add(ff.or(ff.combine(rows.get(current)).negation(), ff.combine(oc)));
       } else {
-        acc.add(rows.get(current).combined().negation());
+        acc.add(ff.combine(rows.get(current)).negation());
       }
     }
 
-    return ff.accumulate(acc);
+    return ff.accumulateBools(acc);
   }
 
   @Override
-  public Relation project(@NotNull java.util.Set<String> projectedAttributes) {
+  public Relation project(java.util.Set<String> projectedAttributes) {
     Heading projectedHeading = heading.project(projectedAttributes);
 
     IndexedRows indexedRows = index(projectedAttributes);
@@ -178,7 +178,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     for (Tuple key : indexedRows) {
       Optional<Set.Transient<TupleAndConstraint>> rac = indexedRows.get(key);
 
-      FormulaAccumulator acc = FormulaAccumulator.OR();
+      BooleanAccumulator acc = BooleanAccumulator.OR();
 
       if (rac.isPresent()) {
         for (TupleAndConstraint rc : rac.get()) {
@@ -186,14 +186,14 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         }
       }
 
-      result.put(key, TupleConstraintFactory.buildConstraint(ff.accumulate(acc)));
+      result.put(key, TupleConstraintFactory.buildConstraint(ff.accumulateBools(acc)));
     }
 
     return rf.buildRelation(projectedHeading, result.freeze(), true);
   }
 
   @Override
-  public Relation naturalJoin(@NotNull Relation other) {
+  public Relation naturalJoin(@NonNull Relation other) {
     java.util.Set<String> joiningFieldNames = heading.getIntersectingAttributeNames(other.getHeading());
     java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 
@@ -247,7 +247,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Relation asSingleton(@NotNull Tuple tuple) {
+  public Relation asSingleton(@NonNull Tuple tuple) {
     return rf.buildRelation(heading, PersistentTrieMap.of(tuple, TupleConstraintFactory.ALL_TRUE), true);
   }
 

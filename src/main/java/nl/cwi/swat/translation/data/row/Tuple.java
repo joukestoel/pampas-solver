@@ -1,7 +1,7 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.smtlogic.Expression;
-import org.jetbrains.annotations.NotNull;
+import nl.cwi.swat.formulacircuit.Expression;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +30,7 @@ class EmptyTuple extends AbstractTuple {
     throw new IllegalArgumentException("This row has no attributes");
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
     return Collections.emptyIterator();
@@ -41,7 +41,7 @@ class EmptyTuple extends AbstractTuple {
 class UnaryTuple extends AbstractTuple {
   private final Expression att;
 
-  UnaryTuple(@NotNull Expression att) {
+  UnaryTuple(@NonNull Expression att) {
     this.att = att;
   }
 
@@ -73,10 +73,10 @@ class UnaryTuple extends AbstractTuple {
     return att.hashCode();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
 
       @Override
@@ -97,7 +97,7 @@ class BinaryTuple extends AbstractTuple {
   private final Expression att1;
   private final Expression att2;
 
-  BinaryTuple(@NotNull Expression att1, @NotNull Expression att2) {
+  BinaryTuple(@NonNull Expression att1, @NonNull Expression att2) {
     this.att1 = att1;
     this.att2 = att2;
   }
@@ -134,10 +134,10 @@ class BinaryTuple extends AbstractTuple {
     return result;
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
       @Override
       public boolean hasNext() {
@@ -164,7 +164,7 @@ class TernaryTuple extends AbstractTuple {
   private final Expression att2;
   private final Expression att3;
 
-  TernaryTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3) {
+  TernaryTuple(@NonNull Expression att1, @NonNull Expression att2, @NonNull Expression att3) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -205,10 +205,10 @@ class TernaryTuple extends AbstractTuple {
     return result;
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
 
       @Override
@@ -237,7 +237,7 @@ class FourAttributesTuple extends AbstractTuple {
   private final Expression att3;
   private final Expression att4;
 
-  FourAttributesTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3, @NotNull Expression att4) {
+  FourAttributesTuple(@NonNull Expression att1, @NonNull Expression att2, @NonNull Expression att3, @NonNull Expression att4) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -282,10 +282,10 @@ class FourAttributesTuple extends AbstractTuple {
     return result;
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
 
       @Override
@@ -315,8 +315,8 @@ class FiveAttributesTuple extends AbstractTuple {
   private final Expression att4;
   private final Expression att5;
 
-  FiveAttributesTuple(@NotNull Expression att1, @NotNull Expression att2, @NotNull Expression att3,
-                      @NotNull Expression att4, @NotNull Expression att5) {
+  FiveAttributesTuple(@NonNull Expression att1, @NonNull Expression att2, @NonNull Expression att3,
+                      @NonNull Expression att4, @NonNull Expression att5) {
     this.att1 = att1;
     this.att2 = att2;
     this.att3 = att3;
@@ -365,10 +365,10 @@ class FiveAttributesTuple extends AbstractTuple {
     return result;
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
 
       @Override
@@ -396,7 +396,7 @@ class FiveAttributesTuple extends AbstractTuple {
 class NaryTuple extends AbstractTuple {
   private final Expression[] atts;
 
-  NaryTuple(@NotNull Expression[] atts) {
+  NaryTuple(@NonNull Expression[] atts) {
     this.atts = atts;
   }
 
@@ -429,10 +429,10 @@ class NaryTuple extends AbstractTuple {
     return Arrays.hashCode(atts);
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Expression> iterator() {
-    return new Iterator<>() {
+    return new Iterator<Expression>() {
       private int current = 0;
 
       @Override

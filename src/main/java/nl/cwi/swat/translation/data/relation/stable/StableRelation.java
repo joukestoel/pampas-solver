@@ -2,18 +2,18 @@ package nl.cwi.swat.translation.data.relation.stable;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.Constraint;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public abstract class StableRelation extends AbstractRelation {
-  public StableRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                        @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                        @NotNull Cache<IndexCacheKey, IndexedRows> indexCache) {
+  public StableRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                        @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                        @NonNull Cache<IndexCacheKey, IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
   }
 }

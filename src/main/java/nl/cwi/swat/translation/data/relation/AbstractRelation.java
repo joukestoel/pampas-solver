@@ -5,10 +5,10 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import io.usethesource.capsule.core.PersistentTrieSet;
-import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.data.row.*;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -22,9 +22,9 @@ public abstract class AbstractRelation implements Relation {
   protected final FormulaFactory ff;
   protected final RelationFactory rf;
 
-  public AbstractRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                          @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                          @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
+  public AbstractRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                          @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                          @NonNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     this.heading = heading;
     this.rows = rows;
     this.rf = rf;
@@ -38,7 +38,7 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
-  public boolean unionCompatible(@NotNull Relation other) {
+  public boolean unionCompatible(@NonNull Relation other) {
     return heading.isUnionCompatible(other.getHeading());
   }
 
@@ -58,16 +58,16 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
-  public Formula getCombinedConstraints(@NotNull Tuple tuple) {
+  public Formula getCombinedConstraints(@NonNull Tuple tuple) {
     if (!rows.containsKey(tuple)) {
       throw new IllegalArgumentException("Tuple is not part of this relation");
     }
 
-    return rows.get(tuple).combined();
+    return ff.combine(rows.get(tuple));
   }
 
   @Override
-  public Constraint getRowConstraint(@NotNull Tuple tuple) {
+  public Constraint getRowConstraint(@NonNull Tuple tuple) {
     if (!rows.containsKey(tuple)) {
       throw new IllegalArgumentException("Tuple is not part of this relation");
     }
@@ -75,7 +75,7 @@ public abstract class AbstractRelation implements Relation {
     return rows.get(tuple);
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Iterator<Tuple> iterator() {
     return rows.keyIterator();
@@ -109,7 +109,7 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
-  public Relation product(@NotNull Relation other) {
+  public Relation product(@NonNull Relation other) {
     if (! heading.getIntersectingAttributeNames(other.getHeading()).isEmpty()) {
       throw new IllegalArgumentException("There are overlapping fields. Can not perform cross product");
     }
@@ -167,7 +167,7 @@ public abstract class AbstractRelation implements Relation {
       this.indexedRows = PersistentTrieMap.transientOf();
     }
 
-    public void add(@NotNull Tuple key, @NotNull Tuple whole, @NotNull Constraint rc) {
+    public void add(@NonNull Tuple key, @NonNull Tuple whole, @NonNull Constraint rc) {
       Set.Transient<TupleAndConstraint> currentVal = indexedRows.get(key);
 
       if (currentVal != null) {
@@ -181,7 +181,7 @@ public abstract class AbstractRelation implements Relation {
       indexedRows.put(key, currentVal);
     }
 
-    public Optional<Set.Transient<TupleAndConstraint>> get(@NotNull Tuple tuple) {
+    public Optional<Set.Transient<TupleAndConstraint>> get(@NonNull Tuple tuple) {
       Set.Transient<TupleAndConstraint> subrows = indexedRows.get(tuple);
       return subrows != null ? Optional.of(subrows) : Optional.empty();
     }
@@ -217,7 +217,7 @@ public abstract class AbstractRelation implements Relation {
       return indexedRows.hashCode();
     }
 
-    @NotNull
+    @NonNull
     @Override
     public Iterator<Tuple> iterator() {
       return indexedRows.keyIterator();
@@ -228,12 +228,12 @@ public abstract class AbstractRelation implements Relation {
     private final Map.Immutable<Tuple, Constraint> rows;
     private final java.util.Set<String> key;
 
-    private IndexCacheKey(@NotNull Map.Immutable<Tuple, Constraint> rows, @NotNull java.util.Set<String> key) {
+    private IndexCacheKey(Map.Immutable<Tuple, Constraint> rows, java.util.Set<String> key) {
       this.rows = rows;
       this.key = key;
     }
 
-    static IndexCacheKey toKey(@NotNull Map.Immutable<Tuple, Constraint> rows, @NotNull java.util.Set<String> key) {
+    static IndexCacheKey toKey(Map.Immutable<Tuple, Constraint> rows, java.util.Set<String> key) {
       return new IndexCacheKey(rows,key);
     }
 

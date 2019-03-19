@@ -3,22 +3,22 @@ package nl.cwi.swat.translation.data.relation.idsonly;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
-import nl.cwi.swat.smtlogic.Formula;
-import nl.cwi.swat.smtlogic.FormulaFactory;
+import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import nl.cwi.swat.translation.data.row.*;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
 public class BinaryIdRelation extends IdsOnlyRelation {
-  public BinaryIdRelation(@NotNull Heading heading, @NotNull Map.Immutable<Tuple, Constraint> rows,
-                          @NotNull RelationFactory rf, @NotNull FormulaFactory ff,
-                          @NotNull Cache<IndexCacheKey,IndexedRows> indexCache) {
+  public BinaryIdRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,
+                          @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
+                          @NonNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
   }
 

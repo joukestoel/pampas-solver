@@ -3,9 +3,9 @@ package nl.cwi.swat.translation;
 import com.github.benmanes.caffeine.cache.Cache;
 import nl.cwi.swat.ast.relational.Expression;
 import nl.cwi.swat.ast.relational.Node;
-import nl.cwi.swat.smtlogic.Formula;
+import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.translation.data.relation.Relation;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.inject.Singleton;
 import java.util.Optional;
@@ -15,7 +15,7 @@ public class TranslationCache {
   private final Cache<TranslationCacheKey, Formula> formulaCache;
   private final Cache<TranslationCacheKey, Relation> expressionCache;
 
-  public TranslationCache(@NotNull Cache<TranslationCacheKey, Formula> formulaCache, @NotNull Cache<TranslationCacheKey, Relation> expressionCache) {
+  public TranslationCache(@NonNull Cache<TranslationCacheKey, Formula> formulaCache, @NonNull Cache<TranslationCacheKey, Relation> expressionCache) {
     this.formulaCache = formulaCache;
     this.expressionCache = expressionCache;
   }
