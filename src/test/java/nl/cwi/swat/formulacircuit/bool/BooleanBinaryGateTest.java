@@ -7,8 +7,7 @@ import nl.cwi.swat.formulacircuit.Term;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(JUnitQuickcheck.class)
 public class BooleanBinaryGateTest {
@@ -19,17 +18,12 @@ public class BooleanBinaryGateTest {
 
   @Property
   public void binaryGateIsOrdered(long first, long second) {
-    Formula low = createForm(first);
-    Formula high = createForm(second);
+    Formula f = createForm(first);
+    Formula s = createForm(second);
 
-    if (first > second) {
-      assertThrows(IllegalArgumentException.class, () -> new BooleanBinaryGate(BooleanOperator.AND, 1, low, high));
-    } else {
-      BooleanBinaryGate form = new BooleanBinaryGate(BooleanOperator.AND, 1, low, high);
-      assertEquals(2, form.size());
-      assertEquals(low, form.input(0));
-      assertEquals(high, form.input(1));
-    }
+    BooleanBinaryGate form = new BooleanBinaryGate(BooleanOperator.AND, 1, f, s);
+    assertEquals(2, form.size());
+    assertTrue(form.input(0).label() < form.input(1).label());
   }
 
   @Test
