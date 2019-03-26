@@ -6,6 +6,7 @@ import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.relational.*;
 import nl.cwi.swat.benchmark.MicroBenchmark;
 import nl.cwi.swat.translation.Environment;
+import nl.cwi.swat.translation.Index;
 import nl.cwi.swat.translation.TranslationCache;
 import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
@@ -19,6 +20,7 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
   private Translator translator;
   private TranslationCache translationCache;
   private RelationFactory rf;
+  private Index idx;
   private Set<Formula> constraints;
   private Environment env;
 
@@ -36,6 +38,7 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
     translator = setup.translator();
     translationCache = setup.translationCache();
     rf = setup.relationFactory();
+    idx = setup.index();
 
     env = constructEnv(true);
     constraints = constraints();
@@ -93,12 +96,13 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
 
   private void reset() {
     translationCache.invalidate();
+    idx.invalidate();
   }
 
   @Override
   protected void singleRun(int currentRunNr) {
     env = constructEnv(true);
-    translator.translate(env, constraints);
+    nl.cwi.swat.formulacircuit.Formula f = translator.translate(env, constraints);
   }
 
   @Override
@@ -112,7 +116,7 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
   }
 
   public static void main(String... args) {
-    PigeonHoleBenchmark test = new PigeonHoleBenchmark(30,29);
+    PigeonHoleBenchmark test = new PigeonHoleBenchmark(50,49);
     List<Long> times = test.runBenchmark(10, 30);
 
     System.out.println("-----------------------");

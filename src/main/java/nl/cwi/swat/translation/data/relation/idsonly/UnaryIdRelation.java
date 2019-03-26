@@ -67,7 +67,7 @@ public class UnaryIdRelation extends IdsOnlyRelation {
           exists = ff.and(exists, joiningRow.getConstraint().exists());
           attCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());
 
-          result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
+          result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
         }
       }
     }

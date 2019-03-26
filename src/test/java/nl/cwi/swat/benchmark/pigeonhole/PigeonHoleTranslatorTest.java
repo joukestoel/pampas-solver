@@ -83,7 +83,7 @@ public class PigeonHoleTranslatorTest {
   @Test
   void simpleAST() {
     long startTime = System.currentTimeMillis();
-    Environment env = constructEnv(20,19, true);
+    Environment env = constructEnv(20,19, false);
     long timeCreatingEnv = System.currentTimeMillis() - startTime;
     System.out.println("Done building env");
 

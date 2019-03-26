@@ -78,11 +78,11 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula result = ff.or(rc.exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          largest.put(tuple, TupleConstraintFactory.buildConstraint(result));
+          largest.__put(tuple, TupleConstraintFactory.buildConstraint(result));
         }
       } else {
         // add tuple
-        largest.put(tuple, smallest.get(tuple));
+        largest.__put(tuple, smallest.get(tuple));
       }
     }
 
@@ -115,7 +115,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula conjoined = ff.and(largest.get(tuple).exists(), smallest.get(tuple).exists());
 
         if (!BooleanConstant.FALSE.equals(conjoined)) {
-          result.put(tuple, TupleConstraintFactory.buildConstraint(conjoined));
+          result.__put(tuple, TupleConstraintFactory.buildConstraint(conjoined));
         }
       }
     }
@@ -140,7 +140,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         Formula result = ff.and(rc.exists(), right.get(tuple).exists().negation());
 
         if (!BooleanConstant.FALSE.equals(result)) {
-          left.put(tuple, TupleConstraintFactory.buildConstraint(result));
+          left.__put(tuple, TupleConstraintFactory.buildConstraint(result));
         }
       }
     }
@@ -191,7 +191,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         }
       }
 
-      result.put(key, TupleConstraintFactory.buildConstraint(ff.accumulateBools(acc)));
+      result.__put(key, TupleConstraintFactory.buildConstraint(ff.accumulateBools(acc)));
     }
 
     return rf.buildRelation(projectedHeading, result.freeze(), true);
@@ -231,7 +231,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
             exists = ff.and(exists, otherRow.getConstraint().exists());
             attCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
 
-            result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
+            result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
           }
         }
       }

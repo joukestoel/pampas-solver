@@ -65,7 +65,7 @@ public class BinaryIdRelation extends IdsOnlyRelation {
                     exists = ff.or(currentIt.get(joinedTuple).exists(), exists);
                   }
 
-                  currentIt.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists));
+                  currentIt.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists));
                   changed = true;
                 }
 
@@ -77,7 +77,7 @@ public class BinaryIdRelation extends IdsOnlyRelation {
 
       if (changed) {
         relFromPrevIt = (BinaryIdRelation) rf.buildRelation(heading, currentIt.freeze(), true);
-        result.putAll(currentIt);
+        result.__putAll(currentIt);
       }
     }
 

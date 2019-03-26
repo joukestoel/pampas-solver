@@ -13,4 +13,8 @@ public class Index {
   public Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> getCache() {
     return cache;
   }
+
+  public void invalidate() {
+    this.cache.invalidateAll();
+  }
 }

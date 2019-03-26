@@ -126,7 +126,7 @@ public abstract class AbstractRelation implements Relation {
         Formula exists = ff.and(lhsCons.exists(), rhsCons.exists());
         Formula attCons = ff.and(lhsCons.attributeConstraints(), rhsCons.attributeConstraints());
 
-        result.put(joinedTuple, TupleConstraintFactory.buildConstraint(exists, attCons));
+        result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists, attCons));
       }
     }
 
@@ -195,7 +195,7 @@ public abstract class AbstractRelation implements Relation {
 
       for (Set<TupleAndConstraint> rows : indexedRows.values()) {
         for (TupleAndConstraint rac : rows) {
-          flattened.put(rac.getTuple(),rac.getConstraint());
+          flattened.__put(rac.getTuple(),rac.getConstraint());
         }
       }
 
