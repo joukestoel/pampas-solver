@@ -4,12 +4,13 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
 
-public class BooleanAccumulator implements Formula<Formula> {
-  private Map.Transient<Long, Formula> inputs;
+public class BooleanAccumulator implements Formula {
+  private Map.Transient<Long, Term> inputs;
 
   private final BooleanOperator.Nary operator;
 
@@ -28,15 +29,15 @@ public class BooleanAccumulator implements Formula<Formula> {
   }
 
 
-  public Formula add(@NonNull Formula f) {
+  public Term add(@NonNull Term f) {
     if (isShortCircuited()) {
       return operator.shortCircuit();
     } else {
       final long lit = f.label();
 
       if (f == operator.shortCircuit() || inputs.containsKey(-lit)) {
-        inputs.clear();
-        inputs.put(operator.shortCircuit().label(), operator.shortCircuit());
+        inputs = PersistentTrieMap.transientOf();
+        inputs.__put(operator.shortCircuit().label(), operator.shortCircuit());
 
         return operator.shortCircuit();
       }
@@ -51,8 +52,8 @@ public class BooleanAccumulator implements Formula<Formula> {
 
   public boolean isShortCircuited() {
     if (inputs.size() == 1) {
-      for (Formula f : inputs.values()) {
-        return f == operator.shortCircuit();
+      for (Term t : inputs.values()) {
+        return t == operator.shortCircuit();
       }
     }
 
@@ -86,7 +87,7 @@ public class BooleanAccumulator implements Formula<Formula> {
 
   @NonNull
   @Override
-  public Iterator<Formula> iterator() {
+  public Iterator<Term> iterator() {
     return inputs.valueIterator();
   }
 

@@ -7,7 +7,9 @@ import dagger.Provides;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.formulacircuit.MinimalReducingCircuitFactory;
+import nl.cwi.swat.translation.Index;
 import nl.cwi.swat.translation.TranslationCache;
+import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Relation;
 
 import javax.inject.Singleton;
@@ -24,6 +26,14 @@ public class Config {
     Cache<TranslationCache.TranslationCacheKey, Relation> expressionCache = Caffeine.newBuilder().recordStats().build();
 
     return new TranslationCache(formulaCache, expressionCache);
+  }
+
+  @Provides
+  @Singleton
+  public Index provideIndex() {
+    Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> index = Caffeine.newBuilder().recordStats().build();
+
+    return new Index(index);
   }
 
   @Provides

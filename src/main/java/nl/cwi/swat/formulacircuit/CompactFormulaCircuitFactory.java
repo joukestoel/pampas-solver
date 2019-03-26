@@ -7,7 +7,6 @@ import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
 import nl.cwi.swat.formulacircuit.bool.BooleanBinaryGate;
 import nl.cwi.swat.formulacircuit.bool.BooleanOperator;
 import nl.cwi.swat.formulacircuit.bool.BooleanVariable;
-import nl.cwi.swat.formulacircuit.ints.IntBinaryEquationGate;
 import nl.cwi.swat.formulacircuit.ints.IntegerAccumulator;
 import nl.cwi.swat.formulacircuit.ints.IntegerOperator;
 import nl.cwi.swat.translation.data.row.Constraint;
@@ -15,6 +14,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class CompactFormulaCircuitFactory implements FormulaFactory {
   private final Cache<GateKey, Formula> formulaCache;
+  private final Cache<GateKey, Expression> expressionCache;
+
   private final int reductionDepth;
 
   private final Set.Transient<Term> variables;
@@ -24,8 +25,9 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
   private long boolVar;
 
 
-  public CompactFormulaCircuitFactory(@NonNull Cache<GateKey, Formula> formulaCache, int reductionDepth) {
+  public CompactFormulaCircuitFactory(@NonNull Cache<GateKey, Formula> formulaCache, @NonNull Cache<GateKey, Expression> expressionCache, int reductionDepth) {
     this.formulaCache = formulaCache;
+    this.expressionCache = expressionCache;
     this.reductionDepth = reductionDepth;
 
     variables = PersistentTrieSet.transientOf();
@@ -85,6 +87,11 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
 
   @Override
   public Formula lte(@NonNull Expression e1, @NonNull Expression e2) {
+    return null;
+  }
+
+  @Override
+  public Expression ite(@NonNull Formula i, @NonNull Expression t, @NonNull Expression e) {
     return null;
   }
 
@@ -153,16 +160,6 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
   }
 
   private Formula assembleEquation(@NonNull IntegerOperator op, @NonNull Expression e1, @NonNull Expression e2) {
-    Expression low, high;
-
-    if (e1.label() < e2.label()) {
-      low = e1;
-      high = e2;
-    } else {
-      low = e1;
-      high = e2;
-    }
-
     return cacheEquation(op, e1, e2);
   }
 
@@ -185,7 +182,7 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
     Formula cachedTerm = formulaCache.getIfPresent(key);
 
     if (cachedTerm == null) {
-      IntBinaryEquationGate gate = new IntBinaryEquationGate(op, low, high, label++);
+      BooleanBinaryGate gate = new BooleanBinaryGate(op, label++, low, high);
       formulaCache.put(key, gate);
 
       return gate;

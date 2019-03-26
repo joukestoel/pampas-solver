@@ -2,6 +2,7 @@ package nl.cwi.swat.formulacircuit.rel;
 
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
@@ -27,7 +28,7 @@ public class IdConstant implements Expression {
   }
 
   @Override
-  public Expression input(int pos) {
+  public Term input(int pos) {
     throw new IndexOutOfBoundsException("Constant is zero arity");
   }
 
@@ -36,10 +37,20 @@ public class IdConstant implements Expression {
     return null;
   }
 
+  @Override
+  public Term negation() {
+    throw new UnsupportedOperationException();
+  }
+
   @NonNull
   @Override
-  public Iterator<Expression> iterator() {
+  public Iterator<Term> iterator() {
     return Collections.emptyIterator();
+  }
+
+  @Override
+  public String toString() {
+    return atom;
   }
 
   @Override

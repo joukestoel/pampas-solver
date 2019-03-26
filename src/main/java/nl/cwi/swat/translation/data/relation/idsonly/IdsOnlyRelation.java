@@ -49,6 +49,11 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
+  public int arity() {
+    return heading.arity();
+  }
+
+  @Override
   public Relation union(@NonNull Relation other) {
     checkUnionCompatibility(other);
     checkType(other);

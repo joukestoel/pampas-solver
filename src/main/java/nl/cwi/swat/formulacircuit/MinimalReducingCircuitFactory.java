@@ -11,6 +11,8 @@ import nl.cwi.swat.translation.data.row.Constraint;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Iterator;
+
 public class MinimalReducingCircuitFactory implements FormulaFactory {
   private long label;
   private long intLabel;
@@ -54,7 +56,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
     }
 
     if (high.operator() == BooleanOperator.BOOLEAN_CONST) {
-      return high == op.identity() ? high : low;
+      return high == op.identity() ? low : high;
     }
 
     return new BooleanBinaryGate(op, label++, low, high);
@@ -67,13 +69,24 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
 
   @Override
   public Formula accumulateBools(@NonNull BooleanAccumulator acc) {
-    return new BooleanNaryGate(acc, label++);
+    int size = acc.size();
+    BooleanOperator.Nary op = (BooleanOperator.Nary) acc.operator();
+
+    switch (size) {
+      case 0: return op.identity();
+      case 1: return (Formula) acc.iterator().next();
+      case 2: {
+        final Iterator<Term> it = acc.iterator();
+        return assemble(op, (Formula) it.next(), (Formula) it.next());
+      }
+      default: return new BooleanNaryGate(acc, label++);
+    }
   }
 
   @Override
   public Formula boolVar(@NonNull String relName) {
     BooleanVariable newVar = new BooleanVariable(relName + "_" + boolLabel++, label++);
-    variables.add(newVar);
+    variables.__insert(newVar);
 
     return newVar;
   }
@@ -84,7 +97,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return BooleanConstant.byVal(((IntegerConstant)e1).getVal() == ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryEquationGate(IntegerOperator.EQUAL, e1, e2, label++);
+    return new BooleanBinaryGate(IntegerOperator.EQUAL, label++, e1, e2);
   }
 
   @Override
@@ -93,7 +106,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return BooleanConstant.byVal(((IntegerConstant)e1).getVal() > ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryEquationGate(IntegerOperator.GT, e1, e2, label++);
+    return new BooleanBinaryGate(IntegerOperator.GT, label++, e1, e2);
   }
 
   @Override
@@ -102,7 +115,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return BooleanConstant.byVal(((IntegerConstant)e1).getVal() >= ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryEquationGate(IntegerOperator.GTE, e1, e2, label++);
+    return new BooleanBinaryGate(IntegerOperator.GTE, label++, e1, e2);
 
   }
 
@@ -112,7 +125,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return BooleanConstant.byVal(((IntegerConstant)e1).getVal() < ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryEquationGate(IntegerOperator.LT, e1, e2, label++);
+    return new BooleanBinaryGate(IntegerOperator.LT, label++, e1, e2);
 
   }
 
@@ -122,8 +135,17 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return BooleanConstant.byVal(((IntegerConstant)e1).getVal() <= ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryEquationGate(IntegerOperator.LTE, e1, e2, label++);
+    return new BooleanBinaryGate(IntegerOperator.LTE, label++, e1, e2);
 
+  }
+
+  @Override
+  public Expression ite(@NonNull Formula i, @NonNull Expression t, @NonNull Expression e) {
+    if (i.operator() == BooleanOperator.BOOLEAN_CONST) {
+      return (i == BooleanConstant.TRUE) ? t : e;
+    }
+
+    return new ITEGate(label++, i, t, e);
   }
 
   @Override
@@ -132,7 +154,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return new IntegerConstant(label++, ((IntegerConstant)e1).getVal() + ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryExpressionGate(IntegerOperator.ADD, e1, e2, label++);
+    return new IntegerBinaryGate(IntegerOperator.ADD, e1, e2, label++);
   }
 
   @Override
@@ -141,7 +163,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return new IntegerConstant(label++, ((IntegerConstant)e1).getVal() - ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryExpressionGate(IntegerOperator.SUB, e1, e2, label++);
+    return new IntegerBinaryGate(IntegerOperator.SUB, e1, e2, label++);
   }
 
   @Override
@@ -150,7 +172,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return new IntegerConstant(label++, ((IntegerConstant)e1).getVal() * ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryExpressionGate(IntegerOperator.MUL, e1, e2, label++);
+    return new IntegerBinaryGate(IntegerOperator.MUL, e1, e2, label++);
 
   }
 
@@ -160,7 +182,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return new IntegerConstant(label++, ((IntegerConstant)e1).getVal() / ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryExpressionGate(IntegerOperator.DIV, e1, e2, label++);
+    return new IntegerBinaryGate(IntegerOperator.DIV, e1, e2, label++);
 
   }
 
@@ -170,7 +192,7 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
       return new IntegerConstant(label++, ((IntegerConstant)e1).getVal() % ((IntegerConstant)e2).getVal());
     }
 
-    return new IntBinaryExpressionGate(IntegerOperator.MOD, e1, e2, label++);
+    return new IntegerBinaryGate(IntegerOperator.MOD, e1, e2, label++);
   }
 
   @Override

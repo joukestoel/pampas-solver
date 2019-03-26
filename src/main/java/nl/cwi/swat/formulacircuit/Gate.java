@@ -2,7 +2,7 @@ package nl.cwi.swat.formulacircuit;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public abstract class Gate<T extends Term> implements Term<T> {
+public abstract class Gate implements Term {
   private final long label;
   protected final Operator operator;
 

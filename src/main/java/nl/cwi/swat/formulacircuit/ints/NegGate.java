@@ -1,24 +1,19 @@
 package nl.cwi.swat.formulacircuit.ints;
 
 import nl.cwi.swat.formulacircuit.Expression;
-import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Gate;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class NegGate implements Expression {
-  private final long label;
-  private final Expression input;
+public class NegGate extends Gate implements Expression {
+  private final Term input;
 
-  public NegGate(@NonNull Expression input, long label) {
+  public NegGate(long label, @NonNull Term input) {
+    super(IntegerOperator.NEG, label);
     this.input = input;
-    this.label = label;
-  }
-
-  @Override
-  public long label() {
-    return label;
   }
 
   @Override
@@ -27,7 +22,7 @@ public class NegGate implements Expression {
   }
 
   @Override
-  public Expression input(int pos) {
+  public Term input(int pos) {
     if (pos != 0) {
       throw new IllegalArgumentException("NegGate only has 1 input");
     }
@@ -36,13 +31,13 @@ public class NegGate implements Expression {
   }
 
   @Override
-  public Operator operator() {
-    return IntegerOperator.NEG;
+  public Term negation() {
+    throw new UnsupportedOperationException();
   }
 
   @NonNull
   @Override
-  public Iterator<Expression> iterator() {
+  public Iterator<Term> iterator() {
     return new Iterator<>() {
       private boolean next = true;
 
@@ -52,7 +47,7 @@ public class NegGate implements Expression {
       }
 
       @Override
-      public Expression next() {
+      public Term next() {
         if (next) {
           next = false;
           return input;
@@ -68,16 +63,13 @@ public class NegGate implements Expression {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    NegGate that = (NegGate) o;
+    NegGate terms = (NegGate) o;
 
-    if (label != that.label) return false;
-    return input.equals(that.input);
+    return input.equals(terms.input);
   }
 
   @Override
   public int hashCode() {
-    int result = (int) (label ^ (label >>> 32));
-    result = 31 * result + input.hashCode();
-    return result;
+    return input.hashCode();
   }
 }

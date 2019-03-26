@@ -171,12 +171,12 @@ public abstract class AbstractRelation implements Relation {
       Set.Transient<TupleAndConstraint> currentVal = indexedRows.get(key);
 
       if (currentVal != null) {
-        indexedRows.remove(key);
+        indexedRows.__remove(key);
       } else {
         currentVal = PersistentTrieSet.transientOf();
       }
 
-      currentVal.add(new TupleAndConstraint(whole, rc));
+      currentVal.__insert(new TupleAndConstraint(whole, rc));
 
       indexedRows.put(key, currentVal);
     }

@@ -51,9 +51,8 @@ public class TupleFactoryTest {
   @Property
   public void buildingAPartialTupleWithIndicesOutsideBoundsThrowsException(@InRange(minInt = 0, maxInt = 50) int arity, Set<@InRange(minInt = 0, maxInt = 70) Integer> indices) {
     assumeThat(indices, hasItem(arity + 1));
-    assumeThat(indices, hasSize(arity));
+//    assumeThat(indices, hasSize(arity));
 
-    System.out.println(arity);
     System.out.println(indices);
 
     assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(arity)), indices));

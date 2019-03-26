@@ -3,15 +3,16 @@ package nl.cwi.swat.formulacircuit.bool;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Gate;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class NotGate extends Gate<Formula> implements Formula<Formula> {
-  private final Formula input;
+public class NotGate extends Gate implements Formula {
+  private final Term input;
 
-  public NotGate(@NonNull Formula input) {
+  public NotGate(@NonNull Term input) {
     super(BooleanOperator.NOT, -input.label());
     this.input = input;
   }
@@ -22,7 +23,7 @@ public class NotGate extends Gate<Formula> implements Formula<Formula> {
   }
 
   @Override
-  public Formula negation() {
+  public Term negation() {
     return input;
   }
 
@@ -32,12 +33,17 @@ public class NotGate extends Gate<Formula> implements Formula<Formula> {
   }
 
   @Override
-  public Formula input(int pos) {
+  public Term input(int pos) {
     if (pos != 0) {
       throw new IllegalArgumentException("NotGate only has 1 input");
     }
 
     return input;
+  }
+
+  @Override
+  public String toString() {
+    return "!" + input;
   }
 
   @Override
@@ -57,8 +63,8 @@ public class NotGate extends Gate<Formula> implements Formula<Formula> {
 
   @NonNull
   @Override
-  public Iterator<Formula> iterator() {
-    return new Iterator<Formula>() {
+  public Iterator<Term> iterator() {
+    return new Iterator<>() {
       private boolean next = true;
 
       @Override
@@ -67,7 +73,7 @@ public class NotGate extends Gate<Formula> implements Formula<Formula> {
       }
 
       @Override
-      public Formula next() {
+      public Term next() {
         if (next) {
           next = false;
           return input;

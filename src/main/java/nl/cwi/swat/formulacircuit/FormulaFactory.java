@@ -19,6 +19,7 @@ public interface FormulaFactory {
   Formula lt(@NonNull Expression e1, @NonNull Expression e2);
   Formula lte(@NonNull Expression e1, @NonNull Expression e2);
 
+  Expression ite(@NonNull Formula i, @NonNull Expression t, @NonNull Expression e);
   Expression add(@NonNull Expression e1, @NonNull Expression e2);
   Expression sub(@NonNull Expression e1, @NonNull Expression e2);
   Expression mul(@NonNull Expression e1, @NonNull Expression e2);

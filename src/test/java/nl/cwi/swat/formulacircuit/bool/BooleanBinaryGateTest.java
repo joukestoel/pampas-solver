@@ -3,6 +3,7 @@ package nl.cwi.swat.formulacircuit.bool;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.Term;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +40,7 @@ public class BooleanBinaryGateTest {
     BooleanBinaryGate form = new BooleanBinaryGate(BooleanOperator.AND, 1, low, high);
 
     int count = 0;
-    for (Formula f : form) {
+    for (Term f : form) {
       count += 1;
     }
 

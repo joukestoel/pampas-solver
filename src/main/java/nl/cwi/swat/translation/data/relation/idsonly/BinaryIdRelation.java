@@ -5,6 +5,7 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
+import nl.cwi.swat.formulacircuit.Term;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;

@@ -6,24 +6,25 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class BinaryGate<T extends Term> extends Gate<T> {
-  private final T low;
-  private final T high;
+public abstract class BinaryGate extends Gate {
+  private final Term low;
+  private final Term high;
 
-  public BinaryGate(@NonNull T low, @NonNull T high, @NonNull Operator operator, long label) {
+  public BinaryGate(@NonNull Term e1, @NonNull Term e2, @NonNull Operator operator, long label) {
     super(operator, label);
 
-    if (low.label() > high.label()) {
-      throw new IllegalArgumentException("Label of the first formula (low) must be lower than the label of the second formula (high)");
+    if (e1.label() < e2.label()) {
+      this.low = e1;
+      this.high = e2;
+    } else {
+      this.low = e2;
+      this.high = e1;
     }
-
-    this.low = low;
-    this.high = high;
   }
 
   @NonNull
   @Override
-  public Iterator<T> iterator() {
+  public Iterator<Term> iterator() {
     return new Iterator<>() {
       private int cur = 0;
 
@@ -33,7 +34,7 @@ public class BinaryGate<T extends Term> extends Gate<T> {
       }
 
       @Override
-      public T next() {
+      public Term next() {
         cur += 1;
 
         if (cur == 1) {
@@ -53,7 +54,7 @@ public class BinaryGate<T extends Term> extends Gate<T> {
   }
 
   @Override
-  public T input(int pos) {
+  public Term input(int pos) {
     if (pos == 0) {
       return low;
     } else if (pos == 1) {
@@ -87,11 +88,16 @@ public class BinaryGate<T extends Term> extends Gate<T> {
   }
 
   @Override
+  public String toString() {
+    return "(" + low + " " + operator + " " + high + ")";
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    BinaryGate<?> that = (BinaryGate<?>) o;
+    BinaryGate that = (BinaryGate) o;
 
     if (!low.equals(that.low)) return false;
     return high.equals(that.high);

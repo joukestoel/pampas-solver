@@ -22,7 +22,7 @@ public class BooleanConstant implements Formula {
   }
 
   @Override
-  public Formula negation() {
+  public Term negation() {
     return this == TRUE ? FALSE : TRUE;
   }
 
@@ -48,7 +48,7 @@ public class BooleanConstant implements Formula {
 
   @Override
   public String toString() {
-    return this == TRUE ? "TRUE" : "FALSE";
+    return this == TRUE ? "T" : "F";
   }
 
   @Override
@@ -68,7 +68,7 @@ public class BooleanConstant implements Formula {
 
   @NonNull
   @Override
-  public Iterator<Formula> iterator() {
+  public Iterator<Term> iterator() {
     return Collections.emptyIterator();
   }
 }

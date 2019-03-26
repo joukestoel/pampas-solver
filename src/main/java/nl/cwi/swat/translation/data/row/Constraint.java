@@ -1,7 +1,7 @@
 package nl.cwi.swat.translation.data.row;
 
-import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
 import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
 
 public interface Constraint {
   Formula exists();
@@ -24,6 +24,11 @@ public interface Constraint {
     @Override
     public Formula attributeConstraints() {
       return attributeConstraints;
+    }
+
+    @Override
+    public String toString() {
+      return "[" + exists + "," + attributeConstraints + "]";
     }
 
     @Override
@@ -60,6 +65,11 @@ public interface Constraint {
     @Override
     public Formula attributeConstraints() {
       return BooleanConstant.TRUE;
+    }
+
+    @Override
+    public String toString() {
+      return "[" + exists + "," + BooleanConstant.TRUE + "]";
     }
 
     @Override

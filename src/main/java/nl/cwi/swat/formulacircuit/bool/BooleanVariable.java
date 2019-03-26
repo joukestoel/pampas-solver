@@ -2,6 +2,7 @@ package nl.cwi.swat.formulacircuit.bool;
 
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
@@ -11,7 +12,7 @@ public class BooleanVariable implements Formula {
   private final String name;
   private final long label;
 
-  private Formula negation;
+  private Term negation;
 
   public BooleanVariable(@NonNull String name, long label) {
     this.name = name;
@@ -24,7 +25,7 @@ public class BooleanVariable implements Formula {
   }
 
   @Override
-  public Formula negation() {
+  public Term negation() {
     if (negation == null) {
       negation = new NotGate(this);
     }
@@ -43,14 +44,19 @@ public class BooleanVariable implements Formula {
   }
 
   @Override
-  public Formula input(int pos) {
+  public Term input(int pos) {
     throw new UnsupportedOperationException("Zero-arity boolean var gate has no inputs");
   }
 
   @NonNull
   @Override
-  public Iterator<Formula> iterator() {
+  public Iterator<Term> iterator() {
     return Collections.emptyIterator();
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 
   @Override
@@ -58,18 +64,16 @@ public class BooleanVariable implements Formula {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    BooleanVariable that = (BooleanVariable) o;
+    BooleanVariable terms = (BooleanVariable) o;
 
-    if (label != that.label) return false;
-    if (!name.equals(that.name)) return false;
-    return negation.equals(that.negation);
+    if (label != terms.label) return false;
+    return name.equals(terms.name);
   }
 
   @Override
   public int hashCode() {
     int result = name.hashCode();
     result = 31 * result + (int) (label ^ (label >>> 32));
-    result = 31 * result + negation.hashCode();
     return result;
   }
 }

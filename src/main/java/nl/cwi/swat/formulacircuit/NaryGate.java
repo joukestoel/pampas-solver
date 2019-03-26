@@ -7,10 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public abstract class NaryGate<T extends Term> extends Gate<T> {
-  private final T[] inputs;
+public abstract class NaryGate extends Gate {
+  private final Term[] inputs;
 
-  protected NaryGate(@NonNull T[] inputs, @NonNull Operator operator, long label) {
+  protected NaryGate(@NonNull Term[] inputs, @NonNull Operator operator, long label) {
     super(operator, label);
 
     this.inputs = inputs;
@@ -22,7 +22,7 @@ public abstract class NaryGate<T extends Term> extends Gate<T> {
   }
 
   @Override
-  public T input(int pos) {
+  public Term input(int pos) {
     if (pos < 0 || pos >= inputs.length) {
       throw new IllegalArgumentException(String.format("Boolean nary gate of size %d does not have formula at index %d", inputs.length, pos));
     }
@@ -69,7 +69,7 @@ public abstract class NaryGate<T extends Term> extends Gate<T> {
     if (this.operator == op && k >= inputs.length) {
       int diff = k - inputs.length;
 
-      for(T f: inputs) {
+      for(Term f: inputs) {
         int oldsize = flat.size();
         f.flatten(op, flat, StrictMath.max(1, diff));
         diff -= (flat.size() - oldsize);
@@ -81,7 +81,7 @@ public abstract class NaryGate<T extends Term> extends Gate<T> {
 
   @NotNull
   @Override
-  public Iterator<T> iterator() {
+  public Iterator<Term> iterator() {
     return new Iterator<>() {
       private int i = 0;
 
@@ -91,10 +91,30 @@ public abstract class NaryGate<T extends Term> extends Gate<T> {
       }
 
       @Override
-      public T next() {
+      public Term next() {
         return inputs[i++];
       }
     };
+  }
+
+  @Override
+  public String toString() {
+    if (size() == 0) {
+      return " ";
+    }
+
+    StringBuilder sb = new StringBuilder("(");
+
+    Iterator<Term> it = iterator();
+    sb.append(it.next());
+
+    while(it.hasNext()) {
+      sb.append(" " + operator + " ");
+      sb.append(it.next());
+    }
+
+    sb.append(")");
+    return sb.toString();
   }
 
   @Override
@@ -102,7 +122,7 @@ public abstract class NaryGate<T extends Term> extends Gate<T> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    NaryGate<?> naryGate = (NaryGate<?>) o;
+    NaryGate naryGate = (NaryGate) o;
 
     // Probably incorrect - comparing Object[] arrays with Arrays.equals
     return Arrays.equals(inputs, naryGate.inputs);

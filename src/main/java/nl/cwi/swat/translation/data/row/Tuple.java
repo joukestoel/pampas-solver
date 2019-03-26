@@ -36,6 +36,10 @@ class EmptyTuple extends AbstractTuple {
     return Collections.emptyIterator();
   }
 
+  @Override
+  public String toString() {
+    return "<>";
+  }
 }
 
 class UnaryTuple extends AbstractTuple {
@@ -91,6 +95,11 @@ class UnaryTuple extends AbstractTuple {
       }
     };
   }
+
+  @Override
+  public String toString() {
+    return "<" + att + ">";
+  }
 }
 
 class BinaryTuple extends AbstractTuple {
@@ -114,6 +123,11 @@ class BinaryTuple extends AbstractTuple {
       case 1: return att2;
       default: throw new IllegalArgumentException("Tuple only contains 2 attributes");
     }
+  }
+
+  @Override
+  public String toString() {
+    return "<" + att1 + "," + att2 + ">";
   }
 
   @Override
@@ -183,6 +197,11 @@ class TernaryTuple extends AbstractTuple {
       case 2: return att3;
       default: throw new IllegalArgumentException("Tuple only contains 3 attributes");
     }
+  }
+
+  @Override
+  public String toString() {
+    return "<" + att1 + "," + att2 + "," + att3 + ">";
   }
 
   @Override
@@ -258,6 +277,11 @@ class FourAttributesTuple extends AbstractTuple {
       case 3: return att4;
       default: throw new IllegalArgumentException("Tuple only contains 4 attributes");
     }
+  }
+
+  @Override
+  public String toString() {
+    return "<" + att1 + "," + att2 + "," + att3 + "," + att4 + ">";
   }
 
   @Override
@@ -342,6 +366,11 @@ class FiveAttributesTuple extends AbstractTuple {
   }
 
   @Override
+  public String toString() {
+    return "<" + att1 + "," + att2 + "," + att3 + "," + att4 + "," + att5 + ">";
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
@@ -412,6 +441,16 @@ class NaryTuple extends AbstractTuple {
     }
 
     return atts[i];
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("<");
+    for (int i = 0; i < atts.length; i++) {
+      sb.append(atts[i]);
+    }
+    sb.append(">");
+    return sb.toString();
   }
 
   @Override

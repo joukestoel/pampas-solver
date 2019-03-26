@@ -4,6 +4,7 @@ import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieSet;
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +14,7 @@ public class IntegerAccumulator implements Expression {
   private final long label;
 
   private final IntegerOperator operator;
-  private final Set.Transient<Expression> inputs;
+  private final Set.Transient<Term> inputs;
 
   public IntegerAccumulator(@NonNull IntegerOperator operator, long label) {
     this.label = label;
@@ -22,7 +23,7 @@ public class IntegerAccumulator implements Expression {
     inputs = PersistentTrieSet.transientOf();
   }
 
-  public Expression add(@NonNull Expression e) {
+  public Term add(@NonNull Term e) {
     inputs.add(e);
 
     return this;
@@ -39,13 +40,18 @@ public class IntegerAccumulator implements Expression {
   }
 
   @Override
-  public Expression input(int pos) {
+  public Term input(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Operator operator() {
     return operator;
+  }
+
+  @Override
+  public Term negation() {
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -70,7 +76,7 @@ public class IntegerAccumulator implements Expression {
 
   @NotNull
   @Override
-  public Iterator<Expression> iterator() {
+  public Iterator<Term> iterator() {
     return inputs.iterator();
   }
 }

@@ -13,24 +13,29 @@ import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
 import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
+import nl.cwi.swat.translation.Index;
 import nl.cwi.swat.translation.data.relation.idsonly.BinaryIdRelation;
+import nl.cwi.swat.translation.data.relation.idsonly.NaryIdRelation;
 import nl.cwi.swat.translation.data.relation.idsonly.UnaryIdRelation;
 import nl.cwi.swat.translation.data.row.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Singleton
 public class RelationFactory {
   private final FormulaFactory ff;
-  private final Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> indexCache;
+  private final Index index;
 
-  public RelationFactory(final FormulaFactory ff,
-                         @NonNull Cache<AbstractRelation.IndexCacheKey, AbstractRelation.IndexedRows> indexCache) {
+  @Inject
+  public RelationFactory(final FormulaFactory ff, @NonNull Index index) {
     this.ff = ff;
-    this.indexCache = indexCache;
+    this.index = index;
   }
 
   public Relation buildRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows, boolean stable) {
@@ -45,9 +50,9 @@ public class RelationFactory {
 
   private Relation buildIdsOnlyRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows) {
     switch(heading.arity()) {
-      case 1: return new UnaryIdRelation(heading, rows, this, ff, indexCache);
-      case 2: return new BinaryIdRelation(heading, rows, this, ff, indexCache);
-      default: throw new IllegalArgumentException(String.format("Unable to build an id only relation with arity %d", heading.arity()));
+      case 1: return new UnaryIdRelation(heading, rows, this, ff, index.getCache());
+      case 2: return new BinaryIdRelation(heading, rows, this, ff, index.getCache());
+      default: return new NaryIdRelation(heading, rows, this, ff, index.getCache());
     }
   }
 
@@ -64,13 +69,13 @@ public class RelationFactory {
     }
   }
 
-  class Builder {
+  public class Builder {
     private String relName;
 
-    private Builder() {
+    public Builder() {
     }
 
-    public HeaderBuilder create(@NonNull  String relName) {
+    public HeaderBuilder create(@NonNull String relName) {
       this.relName = relName;
       return new HeaderBuilder();
     }
@@ -79,7 +84,7 @@ public class RelationFactory {
       return new TupleBuilder(new RelationUnderConstruction(heading));
     }
 
-    class HeaderBuilder {
+    public class HeaderBuilder {
       private final List<Attribute> fields;
 
       public HeaderBuilder() {
@@ -97,7 +102,7 @@ public class RelationFactory {
 
     }
 
-    class TupleBuilder {
+    public class TupleBuilder {
       private final RelationUnderConstruction rel;
 
       private TupleBuilder(@NonNull final RelationUnderConstruction rel) {
@@ -162,7 +167,7 @@ public class RelationFactory {
     private final Set<Integer> partialKeyIndices;
 
     RelationUnderConstruction(@NonNull Heading heading) {
-      this(heading, PersistentTrieMap.of(), RelationFactory.this, RelationFactory.this.ff, RelationFactory.this.indexCache);
+      this(heading, PersistentTrieMap.of(), RelationFactory.this, RelationFactory.this.ff, RelationFactory.this.index.getCache());
     }
 
     private RelationUnderConstruction(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows,

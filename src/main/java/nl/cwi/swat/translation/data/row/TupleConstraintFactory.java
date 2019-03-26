@@ -1,5 +1,6 @@
 package nl.cwi.swat.translation.data.row;
 
+import nl.cwi.swat.formulacircuit.Term;
 import nl.cwi.swat.formulacircuit.bool.BooleanConstant;
 import nl.cwi.swat.formulacircuit.Formula;
 import org.checkerframework.checker.nullness.qual.NonNull;
