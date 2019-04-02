@@ -225,10 +225,10 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
           for (TupleAndConstraint otherRow : otherRows.get()) {
             Tuple joinedTuple = TupleFactory.merge(ownRow.getTuple(), otherRow.getTuple(), indicesOfJoinedFields);
-            exists = ff.and(exists, otherRow.getConstraint().exists());
-            attCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
+            Formula newExists = ff.and(exists, otherRow.getConstraint().exists());
+            Formula newAttCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
 
-            result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
+            result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(newExists,newAttCons));
           }
         }
       }

@@ -10,6 +10,7 @@ import nl.cwi.swat.solverbackend.SmtSolver;
 import nl.cwi.swat.solverbackend.SolverOutcome;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +36,7 @@ public class ExternalSolver implements SmtSolver {
     reader = new ThreadedInputStreamReader(smtSolver.getInputStream());
     reader.start();
 
-    try {
-      solverOut = new OutputStreamWriter(smtSolver.getOutputStream(), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("Unable to create outputstream with charset UTF-8");
-    }
+    solverOut = new OutputStreamWriter(smtSolver.getOutputStream(), StandardCharsets.UTF_8);
 
     setOption("print-success", "true");
   }
@@ -76,7 +73,7 @@ public class ExternalSolver implements SmtSolver {
     write("(assert");
     formula.accept(writer);
     write(")");
-    pushFormula();
+    pushToSolver();
   }
 
   @Override
@@ -84,14 +81,14 @@ public class ExternalSolver implements SmtSolver {
 
   }
 
-  public void setOption(String option, String value) {
+  private void setOption(final String option, final String value) {
     run(String.format("(set-option :%s %s)", option, value));
   }
 
   private void run(String cmd) {
     synchronized (reader) {
       try {
-        System.out.println(cmd);
+//        System.out.println(cmd);
         solverOut.write(cmd + "\n");
         solverOut.flush();
 
@@ -102,16 +99,16 @@ public class ExternalSolver implements SmtSolver {
     }
   }
 
-  public void write(String partial) {
+  private void write(String partial) {
     try {
-      System.out.print(partial);
+//      System.out.print(partial);
       solverOut.write(partial);
     } catch (IOException e) {
       throw new IllegalStateException("Unable to write partial formula to SMT solver");
     }
   }
 
-  private void pushFormula() {
+  private void pushToSolver() {
     run("");
   }
 
@@ -120,12 +117,24 @@ public class ExternalSolver implements SmtSolver {
     run("(check-sat)");
 
     switch (lastResult) {
-      case "sat":     return SolverOutcome.sat(PersistentTrieSet.transientOf());
+      case "sat":     return SolverOutcome.sat(getCurrentAssignedValues());
       case "unsat":   return SolverOutcome.unsat();
       case "unknown": return SolverOutcome.unknown();
       default: throw new IllegalStateException(String.format("Got result %s from solver but I don't know what to do with it", lastResult));
     }
+  }
 
+  private Set<Term> getCurrentAssignedValues() {
+    write("(get-value (");
+    for (Term v: variables) {
+      write(v + " ");
+    }
+    write("))");
+    pushToSolver();
+
+//    System.out.println(lastResult);
+
+    return PersistentTrieSet.transientOf();
   }
 
   @Override
@@ -142,7 +151,7 @@ public class ExternalSolver implements SmtSolver {
     }
   }
 
-  synchronized void outcomeRead(String lastResult) {
+  private synchronized void outcomeRead(String lastResult) {
     this.lastResult = lastResult;
   }
 
@@ -255,11 +264,14 @@ public class ExternalSolver implements SmtSolver {
     private final BufferedReader br;
 
     private boolean finished;
+    private StringBuilder output;
+    private int openBrackets;
 
-    public ThreadedInputStreamReader(InputStream is) {
+    ThreadedInputStreamReader(InputStream is) {
       this.br = new BufferedReader(new InputStreamReader(is));
       finished = false;
-
+      output = new StringBuilder();
+      openBrackets = 0;
     }
 
     @Override
@@ -269,11 +281,25 @@ public class ExternalSolver implements SmtSolver {
             String current;
 
             if ((current = br.readLine()) != null) {
+              if (singularResponse(current)) {
                 synchronized (this) {
                   outcomeRead(current);
                   notify();
-              }
+                }
+              } else {
+                bookkeepBraces(current);
+                output.append(current);
 
+                if (openBrackets == 0) {
+                  String completeResponse = output.toString();
+                  output = new StringBuilder();
+
+                  synchronized (this) {
+                    outcomeRead(completeResponse);
+                    notify();
+                  }
+                }
+              }
             }
 
           } catch (IOException e) {
@@ -283,10 +309,33 @@ public class ExternalSolver implements SmtSolver {
         }
     }
 
-    public void finish() {
+    void finish() {
       this.finished = true;
     }
 
+    private boolean singularResponse(String current) {
+      switch(current) {
+        case "sat":
+        case "unsat":
+        case "unknown":
+        case "success":
+        case "unsupported":
+        case "memout":
+        case "incomplete":
+        case "immediate-exit":
+        case "continued-execution": return true;
+        default:return false;
+      }
+    }
 
+    private void bookkeepBraces(String current) {
+      current.chars().forEach(c -> {
+        if (((char)c) == '(') {
+          openBrackets++;
+        } else if (((char)c) == ')') {
+          openBrackets--;
+        }
+      });
+    }
   }
 }

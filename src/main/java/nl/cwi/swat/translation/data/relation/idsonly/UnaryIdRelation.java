@@ -64,10 +64,10 @@ public class UnaryIdRelation extends IdsOnlyRelation {
 
         for (TupleAndConstraint joiningRow : joiningRows.get()) {
           Tuple joinedTuple = TupleFactory.merge(current, joiningRow.getTuple(), indicesOfJoinedFields);
-          exists = ff.and(exists, joiningRow.getConstraint().exists());
-          attCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());
+          Formula newExists = ff.and(exists, joiningRow.getConstraint().exists());
+          Formula newAttCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());
 
-          result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(exists,attCons));
+          result.__put(joinedTuple, TupleConstraintFactory.buildConstraint(newExists, newAttCons));
         }
       }
     }
