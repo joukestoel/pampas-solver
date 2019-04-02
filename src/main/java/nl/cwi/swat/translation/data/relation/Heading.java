@@ -230,4 +230,22 @@ public class Heading implements Iterable<Attribute> {
   public int hashCode() {
     return attributes.hashCode();
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    boolean first = true;
+    for (Attribute at : this) {
+      if (!first) {
+        sb.append(" | ");
+      } else {
+        first = false;
+      }
+
+      sb.append(at.getName()).append(" ").append("(").append(at.getDomain()).append(")");
+    }
+
+    return sb.toString();
+  }
 }

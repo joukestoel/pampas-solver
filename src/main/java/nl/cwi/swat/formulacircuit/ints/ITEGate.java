@@ -1,10 +1,7 @@
 package nl.cwi.swat.formulacircuit.ints;
 
 import io.usethesource.capsule.Set;
-import nl.cwi.swat.formulacircuit.Expression;
-import nl.cwi.swat.formulacircuit.Gate;
-import nl.cwi.swat.formulacircuit.Operator;
-import nl.cwi.swat.formulacircuit.Term;
+import nl.cwi.swat.formulacircuit.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -13,6 +10,8 @@ public class ITEGate extends Gate implements Expression {
   private final Term ifCon;
   private final Term thenCon;
   private final Term elseCon;
+
+  private int hash;
 
   public ITEGate(long label, Term ifCon, Term thenCon, Term elseCon) {
     super(IntegerOperator.ITE, label);
@@ -66,5 +65,33 @@ public class ITEGate extends Gate implements Expression {
   @Override
   public Iterator<Term> iterator() {
     throw new UnsupportedOperationException("Can't iterate over an ITE gate");
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ITEGate terms = (ITEGate) o;
+
+    if (!ifCon.equals(terms.ifCon)) return false;
+    if (!thenCon.equals(terms.thenCon)) return false;
+    return elseCon.equals(terms.elseCon);
+  }
+
+  @Override
+  public int hashCode() {
+    if (hash == 0) {
+      hash = ifCon.hashCode();
+      hash = 31 * hash + thenCon.hashCode();
+      hash = 31 * hash + elseCon.hashCode();
+    }
+
+    return hash;
   }
 }

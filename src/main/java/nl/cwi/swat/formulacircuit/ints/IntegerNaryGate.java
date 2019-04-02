@@ -2,6 +2,7 @@ package nl.cwi.swat.formulacircuit.ints;
 
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.NaryGate;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -19,6 +20,11 @@ public class IntegerNaryGate extends NaryGate implements Expression {
     }
 
     return inputs;
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 
   @Override

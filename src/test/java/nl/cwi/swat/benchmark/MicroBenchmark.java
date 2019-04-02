@@ -5,8 +5,22 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Scanner;
 
 public abstract class MicroBenchmark {
+  private void waitForEnterKey() {
+    System.out.println("Hit enter to start");
+    Scanner scn = new Scanner(System.in);
+    scn.nextLine();
+  }
+
+  public final List<Long> runBenchmarkAfterEnter(int warmupRuns, int runs) {
+    waitForEnterKey();
+
+    return runBenchmark(warmupRuns, runs);
+  }
+
+
   public final List<Long> runBenchmark(int warmupRuns, int runs) {
     setup();
 

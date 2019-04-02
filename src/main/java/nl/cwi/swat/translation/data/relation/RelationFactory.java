@@ -178,7 +178,7 @@ public class RelationFactory {
       partialKey = heading.getNamesOfIdDomainAttributes();
       partialKeyIndices = heading.getAttributeIndices(partialKey);
 
-      indexedRows = index(partialKey);
+      indexedRows = new IndexedRows();
 
       stable = true;
     }

@@ -1,9 +1,6 @@
 package nl.cwi.swat.formulacircuit.bool;
 
-import nl.cwi.swat.formulacircuit.BinaryGate;
-import nl.cwi.swat.formulacircuit.Formula;
-import nl.cwi.swat.formulacircuit.Operator;
-import nl.cwi.swat.formulacircuit.Term;
+import nl.cwi.swat.formulacircuit.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class BooleanBinaryGate extends BinaryGate implements Formula {
@@ -22,5 +19,8 @@ public class BooleanBinaryGate extends BinaryGate implements Formula {
     return negation;
   }
 
-
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
 }

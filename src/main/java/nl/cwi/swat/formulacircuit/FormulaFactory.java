@@ -1,5 +1,6 @@
 package nl.cwi.swat.formulacircuit;
 
+import io.usethesource.capsule.Set;
 import nl.cwi.swat.formulacircuit.bool.BooleanAccumulator;
 import nl.cwi.swat.formulacircuit.ints.IntegerAccumulator;
 import nl.cwi.swat.translation.data.row.Constraint;
@@ -32,6 +33,8 @@ public interface FormulaFactory {
   Expression intConst(int val);
 
   Expression idConst(@NonNull String atom);
+
+  Set<Term> getVariables();
 
   Formula combine(Constraint cons);
 }

@@ -1,9 +1,6 @@
 package nl.cwi.swat.formulacircuit.bool;
 
-import nl.cwi.swat.formulacircuit.Formula;
-import nl.cwi.swat.formulacircuit.Gate;
-import nl.cwi.swat.formulacircuit.Operator;
-import nl.cwi.swat.formulacircuit.Term;
+import nl.cwi.swat.formulacircuit.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
@@ -44,6 +41,11 @@ public class NotGate extends Gate implements Formula {
   @Override
   public String toString() {
     return "!" + input;
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 
   @Override

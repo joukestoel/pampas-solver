@@ -21,6 +21,10 @@ public class BinaryIdRelation extends IdsOnlyRelation {
                           @NonNull RelationFactory rf, @NonNull FormulaFactory ff,
                           @NonNull Cache<IndexCacheKey,IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
+
+    if (heading.arity() != 2) {
+      throw new IllegalArgumentException("Heading of binary relation can not have a arity other than 2");
+    }
   }
 
   @Override

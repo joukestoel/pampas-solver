@@ -4,6 +4,7 @@ import io.usethesource.capsule.Set;
 import io.usethesource.capsule.core.PersistentTrieSet;
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -52,6 +53,11 @@ public class IntegerAccumulator implements Expression {
   @Override
   public Term negation() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 
   @Override

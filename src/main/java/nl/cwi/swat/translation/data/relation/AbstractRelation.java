@@ -141,23 +141,29 @@ public abstract class AbstractRelation implements Relation {
     AbstractRelation rows = (AbstractRelation) o;
 
     if (!this.rows.equals(rows.rows)) return false;
-    if (!heading.equals(rows.heading)) return false;
-    if (!ff.equals(rows.ff)) return false;
-    return rf.equals(rows.rf);
+    return heading.equals(rows.heading);
   }
 
   @Override
   public int hashCode() {
     int result = rows.hashCode();
     result = 31 * result + heading.hashCode();
-    result = 31 * result + ff.hashCode();
-    result = 31 * result + rf.hashCode();
     return result;
   }
 
   @Override
   public String toString() {
-    return "TODO";
+    StringBuilder sb = new StringBuilder();
+    sb.append(heading + "\n");
+    sb.append("===============\n");
+
+    Iterator<Tuple> tupleIterator = rows.keyIterator();
+    while (tupleIterator.hasNext()) {
+      Tuple t = tupleIterator.next();
+      sb.append(t).append(" || ").append(rows.get(t)).append("\n");
+    }
+
+    return sb.toString();
   }
 
   public class IndexedRows implements Iterable<Tuple> {

@@ -12,5 +12,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class NaryIdRelation extends IdsOnlyRelation {
   public NaryIdRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows, @NonNull RelationFactory rf, @NonNull FormulaFactory ff, @NonNull Cache<IndexCacheKey, IndexedRows> indexCache) {
     super(heading, rows, rf, ff, indexCache);
+
+    if (heading.arity() < 3) {
+      throw new IllegalArgumentException("Heading of nary relation must have a arity greater than 2");
+    }
   }
 }

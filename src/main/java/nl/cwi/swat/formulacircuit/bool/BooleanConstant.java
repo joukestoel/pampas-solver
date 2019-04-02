@@ -1,6 +1,7 @@
 package nl.cwi.swat.formulacircuit.bool;
 
 import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -10,11 +11,14 @@ import java.util.Iterator;
 public class BooleanConstant implements Formula {
   private final long label;
 
+  private int hash;
+
   public static final BooleanConstant TRUE = new BooleanConstant(Long.MAX_VALUE);
   public static final BooleanConstant FALSE = new BooleanConstant(Long.MIN_VALUE);
 
   private BooleanConstant(long label) {
     this.label = label;
+    this.hash = 0;
   }
 
   public static BooleanConstant byVal(boolean val) {
@@ -52,6 +56,11 @@ public class BooleanConstant implements Formula {
   }
 
   @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
@@ -63,7 +72,11 @@ public class BooleanConstant implements Formula {
 
   @Override
   public int hashCode() {
-    return (int) (label ^ (label >>> 32));
+    if (hash == 0) {
+      hash = (int) (label ^ (label >>> 32));
+    }
+
+    return hash;
   }
 
   @NonNull

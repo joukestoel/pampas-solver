@@ -1,6 +1,6 @@
 package nl.cwi.swat.formulacircuit;
 
-public abstract class Operator implements Comparable<Operator>{
+public abstract class Operator implements Comparable<Operator> {
   private final int ordinal;
 
   public Operator(int ordinal) {
@@ -39,5 +39,9 @@ public abstract class Operator implements Comparable<Operator>{
   @Override
   public int hashCode() {
     return ordinal;
+  }
+
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 }

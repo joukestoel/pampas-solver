@@ -13,6 +13,8 @@ public interface Term extends Iterable<Term> {
 
   <T extends Term> T negation();
 
+  <T> T accept(SolverVisitor<T> visitor);
+
   default boolean contains(Operator op, long f, int k) {
     return f == label();
   }

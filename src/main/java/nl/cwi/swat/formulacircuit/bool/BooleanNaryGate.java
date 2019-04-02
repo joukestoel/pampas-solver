@@ -1,6 +1,7 @@
 package nl.cwi.swat.formulacircuit.bool;
 
 import nl.cwi.swat.formulacircuit.Formula;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import nl.cwi.swat.formulacircuit.NaryGate;
 
@@ -28,5 +29,10 @@ public class BooleanNaryGate extends NaryGate implements Formula {
       negation = new NotGate(this);
     }
     return negation;
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 }

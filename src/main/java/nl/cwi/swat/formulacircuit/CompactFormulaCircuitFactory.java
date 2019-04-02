@@ -141,6 +141,11 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
   }
 
   @Override
+  public Set<Term> getVariables() {
+    return variables.freeze();
+  }
+
+  @Override
   public Formula combine(Constraint cons) {
     return assembleFormula(BooleanOperator.AND, cons.exists(), cons.attributeConstraints());
   }

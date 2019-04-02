@@ -225,7 +225,7 @@ public class Translator implements TranslationVisitor<Formula, Relation, Literal
       return TRUE;
     }
 
-    BooleanAccumulator accumulator = BooleanAccumulator.OR();
+    BooleanAccumulator accumulator = BooleanAccumulator.AND();
     Formula partial = FALSE;
 
     Iterator<Tuple> it = r.iterator();

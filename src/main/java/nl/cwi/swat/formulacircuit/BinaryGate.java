@@ -10,6 +10,8 @@ public abstract class BinaryGate extends Gate {
   private final Term low;
   private final Term high;
 
+  private int hash;
+
   public BinaryGate(@NonNull Term e1, @NonNull Term e2, @NonNull Operator operator, long label) {
     super(operator, label);
 
@@ -20,6 +22,8 @@ public abstract class BinaryGate extends Gate {
       this.low = e2;
       this.high = e1;
     }
+
+    hash = 0;
   }
 
   @NonNull
@@ -105,8 +109,11 @@ public abstract class BinaryGate extends Gate {
 
   @Override
   public int hashCode() {
-    int result = low.hashCode();
-    result = 31 * result + high.hashCode();
-    return result;
+    if (hash == 0) {
+      hash = low.hashCode();
+      hash = 31 * hash + high.hashCode();
+    }
+
+    return hash;
   }
 }

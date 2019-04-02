@@ -4,6 +4,7 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -92,6 +93,11 @@ public class BooleanAccumulator implements Formula {
   }
 
   @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
@@ -104,8 +110,9 @@ public class BooleanAccumulator implements Formula {
 
   @Override
   public int hashCode() {
-    int result = inputs.hashCode();
-    result = 31 * result + operator.hashCode();
-    return result;
+    int  hash = inputs.hashCode();
+    hash = 31 * hash + operator.hashCode();
+
+    return hash;
   }
 }

@@ -205,9 +205,6 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     if (joiningFieldNames.isEmpty()) {
       throw new IllegalArgumentException("No fields to perform natural join on");
     }
-    if (joiningFieldNames.size() != 1) {
-      throw new IllegalStateException("Joining an unary relation should only be joined on a single field");
-    }
 
     AbstractRelation otherRel = (AbstractRelation) other;
 

@@ -2,6 +2,7 @@ package nl.cwi.swat.formulacircuit.rel;
 
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -51,6 +52,11 @@ public class IdConstant implements Expression {
   @Override
   public String toString() {
     return atom;
+  }
+
+  @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
   }
 
   @Override

@@ -45,6 +45,9 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
 
   @NotNull
   private Formula assemble(BooleanOperator.Nary op, @NonNull Formula f1, @NonNull Formula f2) {
+    if (f1.label() == f2.label()) {
+      return f1;
+    }
     Formula low, high;
 
     if (f1.operator().ordinal() < f2.operator().ordinal()) {
@@ -89,6 +92,11 @@ public class MinimalReducingCircuitFactory implements FormulaFactory {
     variables.__insert(newVar);
 
     return newVar;
+  }
+
+  @Override
+  public Set<Term> getVariables() {
+    return variables.freeze();
   }
 
   @Override

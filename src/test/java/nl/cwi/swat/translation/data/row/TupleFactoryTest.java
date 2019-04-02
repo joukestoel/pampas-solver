@@ -53,8 +53,6 @@ public class TupleFactoryTest {
     assumeThat(indices, hasItem(arity + 1));
 //    assumeThat(indices, hasSize(arity));
 
-    System.out.println(indices);
-
     assertThrows(IllegalArgumentException.class, () -> TupleFactory.buildPartialTuple(buildTuple(atts(arity)), indices));
   }
 

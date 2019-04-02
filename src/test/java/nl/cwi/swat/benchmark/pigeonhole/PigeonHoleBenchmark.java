@@ -11,10 +11,7 @@ import nl.cwi.swat.translation.TranslationCache;
 import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PigeonHoleBenchmark extends MicroBenchmark {
   private Translator translator;
@@ -78,13 +75,13 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
   private Set<Formula> constraints() {
     Set<Formula> constraints = new HashSet<>();
 
-//    constraints.add(new Subset(new RelVar("nest"), new Product(new RelVar("pigeons"), new RelVar("holes"))));
+    constraints.add(new Subset(new RelVar("nest"), new Product(new RelVar("pigeons"), new RelVar("holes"))));
 
     List<Declaration> p = Collections.singletonList(new Declaration("p", new RelVar("pigeons")));
     constraints.add(new Forall(p, new One(new NaturalJoin(new RelVar("p"), new RelVar("nest")))));
 
-//    List<Declaration> h = Collections.singletonList(new Declaration("h", new RelVar("holes")));
-//    constraints.add(new Forall(h, new Lone(new NaturalJoin(new RelVar("h"), new RelVar("nest")))));
+    List<Declaration> h = Collections.singletonList(new Declaration("h", new RelVar("holes")));
+    constraints.add(new Forall(h, new Lone(new NaturalJoin(new RelVar("h"), new RelVar("nest")))));
 
     return constraints;
   }
@@ -117,7 +114,8 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
 
   public static void main(String... args) {
     PigeonHoleBenchmark test = new PigeonHoleBenchmark(50,49);
-    List<Long> times = test.runBenchmark(10, 30);
+
+    List<Long> times = test.runBenchmarkAfterEnter(10, 30);
 
     System.out.println("-----------------------");
     System.out.printf("Mean running time: %d \n", mean(times));
@@ -130,7 +128,7 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
     System.out.println(times);
   }
 
-//  public static void main(String... args) {
+  //  public static void main(String... args) {
 //    HashMap<Integer, Long> meanTimesPerConfig = new HashMap<>();
 //
 //    for (int i = 10; i < 100; i++) {

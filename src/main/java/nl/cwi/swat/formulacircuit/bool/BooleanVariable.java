@@ -2,6 +2,7 @@ package nl.cwi.swat.formulacircuit.bool;
 
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Operator;
+import nl.cwi.swat.formulacircuit.SolverVisitor;
 import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -11,12 +12,15 @@ import java.util.Iterator;
 public class BooleanVariable implements Formula {
   private final String name;
   private final long label;
+  private int hash;
 
   private Term negation;
 
   public BooleanVariable(@NonNull String name, long label) {
     this.name = name;
     this.label = label;
+
+    hash = 0;
   }
 
   @Override
@@ -71,9 +75,17 @@ public class BooleanVariable implements Formula {
   }
 
   @Override
+  public <T> T accept(SolverVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
   public int hashCode() {
-    int result = name.hashCode();
-    result = 31 * result + (int) (label ^ (label >>> 32));
-    return result;
+    if (hash == 0) {
+      hash = name.hashCode();
+      hash = 31 * hash + (int) (label ^ (label >>> 32));
+    }
+
+    return hash;
   }
 }
