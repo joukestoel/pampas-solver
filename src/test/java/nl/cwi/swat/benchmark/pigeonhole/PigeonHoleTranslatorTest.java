@@ -16,6 +16,7 @@ import nl.cwi.swat.translation.Environment;
 import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Ignore
 @RunWith(JUnitQuickcheck.class)
 public class PigeonHoleTranslatorTest {
   private Translator translator;
@@ -93,7 +95,7 @@ public class PigeonHoleTranslatorTest {
   @Test
   public void pigeonHoleProblemIsUnsatSingularTest() {
     long startTime = System.currentTimeMillis();
-    Environment env = constructEnv(11, 10, true);
+    Environment env = constructEnv(5, 4, true);
     long timeCreatingEnv = System.currentTimeMillis() - startTime;
     System.out.println("Done building env");
 

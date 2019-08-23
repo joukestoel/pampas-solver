@@ -113,7 +113,7 @@ public class PigeonHoleBenchmark extends MicroBenchmark {
   }
 
   public static void main(String... args) {
-    PigeonHoleBenchmark test = new PigeonHoleBenchmark(50,49);
+    PigeonHoleBenchmark test = new PigeonHoleBenchmark(99,98);
 
     List<Long> times = test.runBenchmarkAfterEnter(10, 30);
 
