@@ -51,6 +51,11 @@
           <!--</compilerArgs>-->
         <!--</configuration>-->
       <!--</plugin>-->
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.12.4</version>
+      </plugin>
     </plugins>
   </build>
 
@@ -169,4 +174,21 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>ci</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludedGroups>nl.cwi.swat.Integration</excludedGroups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

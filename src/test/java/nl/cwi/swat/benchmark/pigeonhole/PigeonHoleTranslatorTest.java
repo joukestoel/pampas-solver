@@ -4,6 +4,7 @@ import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import nl.cwi.swat.DaggerSolverSetup;
+import nl.cwi.swat.Integration;
 import nl.cwi.swat.SolverSetup;
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.relational.*;
@@ -17,6 +18,7 @@ import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +32,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Ignore
+@Category(Integration.class)
 @RunWith(JUnitQuickcheck.class)
 public class PigeonHoleTranslatorTest {
   private Translator translator;
