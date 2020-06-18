@@ -55,14 +55,14 @@ public class UnaryIdRelation extends IdsOnlyRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple current : rows.keySet()) {
-      Optional<Set.Transient<TupleAndConstraint>> joiningRows = indexedOtherRows.get(current);
+      Optional<Set.Transient<Row>> joiningRows = indexedOtherRows.get(current);
 
       if (joiningRows.isPresent()) {
         Constraint rc = rows.get(current);
         Formula exists = rc.exists();
         Formula attCons = rc.attributeConstraints();
 
-        for (TupleAndConstraint joiningRow : joiningRows.get()) {
+        for (Row joiningRow : joiningRows.get()) {
           Tuple joinedTuple = TupleFactory.merge(current, joiningRow.getTuple(), indicesOfJoinedFields);
           Formula newExists = ff.and(exists, joiningRow.getConstraint().exists());
           Formula newAttCons = ff.and(attCons, joiningRow.getConstraint().attributeConstraints());

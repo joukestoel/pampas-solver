@@ -5,7 +5,6 @@ import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
-import nl.cwi.swat.formulacircuit.Term;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
@@ -51,15 +50,15 @@ public class BinaryIdRelation extends IdsOnlyRelation {
       Map.Transient<Tuple, Constraint> currentIt = PersistentTrieMap.transientOf();
 
       for (Tuple key : base) {
-        Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> ownRacs = base.get(key);
+        Optional<io.usethesource.capsule.Set.Transient<Row>> ownRacs = base.get(key);
 
         if (ownRacs.isPresent()) {
-          Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> otherRacs = indexedFrom.get(key);
+          Optional<io.usethesource.capsule.Set.Transient<Row>> otherRacs = indexedFrom.get(key);
 
           if (otherRacs.isPresent()) {
 
-            for (TupleAndConstraint ownRac: ownRacs.get()) {
-              for (TupleAndConstraint otherRac: otherRacs.get()) {
+            for (Row ownRac: ownRacs.get()) {
+              for (Row otherRac: otherRacs.get()) {
                 Tuple joinedTuple = TupleFactory.merge(ownRac.getTuple(), otherRac.getTuple(), Set.of(0));
 
                 if (!rows.containsKey(joinedTuple)) { // already in base relation, no need to add

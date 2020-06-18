@@ -203,7 +203,7 @@ public class RelationFactory {
       }
 
       Tuple key = TupleFactory.buildPartialTuple(tuple, partialKeyIndices);
-      Optional<io.usethesource.capsule.Set.Transient<TupleAndConstraint>> existingRows = indexedRows.get(key);
+      Optional<io.usethesource.capsule.Set.Transient<Row>> existingRows = indexedRows.get(key);
 
       if (!existingRows.isPresent()) {
         // tuple (or partial tuple) does not yet exists, can be safely added
@@ -217,10 +217,10 @@ public class RelationFactory {
       }
     }
 
-    private Formula constraintAttributes(Tuple toBeAdded, Set<TupleAndConstraint> overlappingRows) {
+    private Formula constraintAttributes(Tuple toBeAdded, Set<Row> overlappingRows) {
       BooleanAccumulator outerAnd = BooleanAccumulator.AND();
 
-      for (TupleAndConstraint rac : overlappingRows) {
+      for (Row rac : overlappingRows) {
         // Build a and gate constraining all the attributes to be equal
         BooleanAccumulator innerAnd = BooleanAccumulator.AND();
         for (int i = 0; i < toBeAdded.arity(); i++) {

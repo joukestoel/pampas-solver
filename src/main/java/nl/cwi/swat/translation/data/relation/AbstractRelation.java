@@ -167,14 +167,14 @@ public abstract class AbstractRelation implements Relation {
   }
 
   public class IndexedRows implements Iterable<Tuple> {
-    private final Map.Transient<Tuple, Set.Transient<TupleAndConstraint>> indexedRows;
+    private final Map.Transient<Tuple, Set.Transient<Row>> indexedRows;
 
     IndexedRows() {
       this.indexedRows = PersistentTrieMap.transientOf();
     }
 
     public void add(@NonNull Tuple key, @NonNull Tuple whole, @NonNull Constraint rc) {
-      Set.Transient<TupleAndConstraint> currentVal = indexedRows.get(key);
+      Set.Transient<Row> currentVal = indexedRows.get(key);
 
       if (currentVal != null) {
         indexedRows.__remove(key);
@@ -182,13 +182,13 @@ public abstract class AbstractRelation implements Relation {
         currentVal = PersistentTrieSet.transientOf();
       }
 
-      currentVal.__insert(new TupleAndConstraint(whole, rc));
+      currentVal.__insert(new Row(whole, rc));
 
       indexedRows.put(key, currentVal);
     }
 
-    public Optional<Set.Transient<TupleAndConstraint>> get(@NonNull Tuple tuple) {
-      Set.Transient<TupleAndConstraint> subrows = indexedRows.get(tuple);
+    public Optional<Set.Transient<Row>> get(@NonNull Tuple tuple) {
+      Set.Transient<Row> subrows = indexedRows.get(tuple);
       return subrows != null ? Optional.of(subrows) : Optional.empty();
     }
 
@@ -199,8 +199,8 @@ public abstract class AbstractRelation implements Relation {
     Map.Immutable<Tuple, Constraint> flatten() {
       Map.Transient<Tuple, Constraint> flattened = PersistentTrieMap.transientOf();
 
-      for (Set<TupleAndConstraint> rows : indexedRows.values()) {
-        for (TupleAndConstraint rac : rows) {
+      for (Set<Row> rows : indexedRows.values()) {
+        for (Row rac : rows) {
           flattened.__put(rac.getTuple(),rac.getConstraint());
         }
       }

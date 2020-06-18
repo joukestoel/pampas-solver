@@ -181,12 +181,12 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple key : indexedRows) {
-      Optional<Set.Transient<TupleAndConstraint>> rac = indexedRows.get(key);
+      Optional<Set.Transient<Row>> rac = indexedRows.get(key);
 
       BooleanAccumulator acc = BooleanAccumulator.OR();
 
       if (rac.isPresent()) {
-        for (TupleAndConstraint rc : rac.get()) {
+        for (Row rc : rac.get()) {
           acc.add(rc.getConstraint().exists());
         }
       }
@@ -214,16 +214,16 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple current : indexedOwnRows) {
-      Optional<Set.Transient<TupleAndConstraint>> ownRows = indexedOwnRows.get(current);
-      Optional<Set.Transient<TupleAndConstraint>> otherRows = indexedOtherRows.get(current);
+      Optional<Set.Transient<Row>> ownRows = indexedOwnRows.get(current);
+      Optional<Set.Transient<Row>> otherRows = indexedOtherRows.get(current);
 
       if (ownRows.isPresent() && otherRows.isPresent()) {
-        for (TupleAndConstraint ownRow : ownRows.get()) {
+        for (Row ownRow : ownRows.get()) {
           Constraint rc = rows.get(current);
           Formula exists = rc.exists();
           Formula attCons = rc.attributeConstraints();
 
-          for (TupleAndConstraint otherRow : otherRows.get()) {
+          for (Row otherRow : otherRows.get()) {
             Tuple joinedTuple = TupleFactory.merge(ownRow.getTuple(), otherRow.getTuple(), indicesOfJoinedFields);
             Formula newExists = ff.and(exists, otherRow.getConstraint().exists());
             Formula newAttCons = ff.and(attCons, otherRow.getConstraint().attributeConstraints());
