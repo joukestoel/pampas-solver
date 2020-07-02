@@ -2,7 +2,7 @@ package nl.cwi.swat.ast.relational;
 
 import nl.cwi.swat.ast.TranslationVisitor;
 
-public class Some extends CardinalityConstraint {
+public class Some extends CardinalityFormula {
   public Some(Expression expr) {
     super(expr);
   }

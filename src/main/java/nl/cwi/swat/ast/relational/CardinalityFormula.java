@@ -2,10 +2,10 @@ package nl.cwi.swat.ast.relational;
 
 import java.util.Objects;
 
-public abstract class CardinalityConstraint extends Formula {
+public abstract class CardinalityFormula extends Formula {
   private final Expression expr;
 
-  public CardinalityConstraint(Expression expr) {
+  public CardinalityFormula(Expression expr) {
     this.expr = expr;
   }
 
@@ -17,7 +17,7 @@ public abstract class CardinalityConstraint extends Formula {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    CardinalityConstraint that = (CardinalityConstraint) o;
+    CardinalityFormula that = (CardinalityFormula) o;
     return Objects.equals(expr, that.expr);
   }
 

@@ -4,7 +4,7 @@ import nl.cwi.swat.ast.TranslationVisitor;
 
 import java.util.Objects;
 
-public class Declaration extends Node {
+public final class Declaration extends Node {
   private final String variable;
   private final Expression binding;
 
@@ -31,13 +31,17 @@ public class Declaration extends Node {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Declaration that = (Declaration) o;
-    return Objects.equals(variable, that.variable) &&
-            Objects.equals(binding, that.binding);
+    return variable.equals(that.variable) &&
+            binding.equals(that.binding);
   }
 
   @Override
   public int hashCode() {
-
     return Objects.hash(variable, binding);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("%s : %s", this.variable, this.binding);
   }
 }

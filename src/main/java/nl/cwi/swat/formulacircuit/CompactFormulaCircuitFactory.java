@@ -10,7 +10,10 @@ import nl.cwi.swat.formulacircuit.bool.BooleanVariable;
 import nl.cwi.swat.formulacircuit.ints.IntegerAccumulator;
 import nl.cwi.swat.formulacircuit.ints.IntegerOperator;
 import nl.cwi.swat.translation.data.row.Constraint;
+import nl.cwi.swat.util.XXHashMixer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
+import java.util.Map;
 
 public class CompactFormulaCircuitFactory implements FormulaFactory {
   private final Cache<GateKey, Formula> formulaCache;
@@ -24,6 +27,8 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
   private long intVar;
   private long boolVar;
 
+  private Set.Transient<Term> scratch0;
+  private Set.Transient<Term> scratch1;
 
   public CompactFormulaCircuitFactory(@NonNull Cache<GateKey, Formula> formulaCache, @NonNull Cache<GateKey, Expression> expressionCache, int reductionDepth) {
     this.formulaCache = formulaCache;
@@ -173,7 +178,7 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
     Formula cachedTerm = formulaCache.getIfPresent(key);
 
     if (cachedTerm == null) {
-      BooleanBinaryGate gate = new BooleanBinaryGate(op, label, low, high);
+      BooleanBinaryGate gate = new BooleanBinaryGate(op, label++, low, high);
       formulaCache.put(key, gate);
 
       return gate;
@@ -235,4 +240,40 @@ public class CompactFormulaCircuitFactory implements FormulaFactory {
       return result;
     }
   }
+
+//  public final Assembler AoA = (op, left, right) -> {
+//    if (left.operator() != BooleanOperator.AND || right.operator() != BooleanOperator.AND) {
+//      throw new IllegalArgumentException("AoA only works on AND operators");
+//    }
+//    /**
+//     * Performs the following reductions, if possible, along with the JoX reductions.
+//     * (a1 & ... & an) & (aj & ... & ak) = (a1 & ... & an) where 1 <= j <= k <= n
+//     * (a1 & ... & an) | (aj & ... & ak) = (aj & ... & ak) where 1 <= j <= k <= n
+//     * (a1 | ... | an) | (aj | ... | ak) = (a1 | ... | an) where 1 <= j <= k <= n
+//     * (a1 | ... | an) & (aj | ... | ak) = (aj | ... | ak) where 1 <= j <= k <= n
+//     * @requires f0.op = f1.op && (f0+f1).op in (AND + OR)
+//     */
+//    if (left==right) return left;
+//    final Operator fop = left.operator();
+//
+//    scratch0 = PersistentTrieSet.transientOf();
+//    scratch1 = PersistentTrieSet.transientOf();
+//
+//    left.flatten(fop, scratch0, reductionDepth);
+//    right.flatten(fop, scratch1, reductionDepth);
+//
+//    if (scratch0.size() < scratch1.size() && scratch1.containsAll(scratch0)) {
+//      return op == fop ? f1 : f0;
+//    } else if (scrap0.size() >= scrap1.size() && scrap0.containsAll(scrap1)) {
+//      return op == fop ? f0 : f1;
+//    } else if (f0.label()<f1.label()) {
+//      return JoX.assemble(op, f1, f0);
+//    } else {
+//      return JoX.assemble(op, f0, f1);
+//    }
+//  };
+
+//  public final Map<Integer,Assembler> ASSEMBLERS = Map.ofEntries(
+//    Map.entry(XXHashMixer.mix(BooleanOperator.AND.ordinal(), BooleanOperator.AND.ordinal()))
+//  );
 }

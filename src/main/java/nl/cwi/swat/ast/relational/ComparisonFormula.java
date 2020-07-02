@@ -30,7 +30,6 @@ public abstract class ComparisonFormula extends Formula {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(left, right);
   }
 }

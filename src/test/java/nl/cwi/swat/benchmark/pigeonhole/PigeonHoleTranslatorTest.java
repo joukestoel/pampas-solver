@@ -23,11 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,7 +47,7 @@ public class PigeonHoleTranslatorTest {
     ff = setup.formulaFactory();
   }
 
-  private Environment constructEnv(int nrOfPigeons, int nrOfHoles, boolean optionalNests) {
+  public Environment constructEnv(int nrOfPigeons, int nrOfHoles, boolean optionalNests) {
     RelationFactory.Builder.TupleBuilder pigeonsBuilder = rf.new Builder().create("pigeon").add("pId", Domain.ID).done();
     RelationFactory.Builder.TupleBuilder holesBuilder = rf.new Builder().create("holes").add("hId", Domain.ID).done();
     RelationFactory.Builder.TupleBuilder nestBuilder = rf.new Builder().create("nest").add("pId", Domain.ID).add("hId", Domain.ID).done();
@@ -80,8 +78,8 @@ public class PigeonHoleTranslatorTest {
   }
 
 
-  private Set<Formula> constraints() {
-    Set<Formula> constraints = new HashSet<>();
+  public static List<Formula> constraints() {
+    List<Formula> constraints = new ArrayList<>();
 
     constraints.add(new Subset(new RelVar("nest"), new Product(new RelVar("pigeons"), new RelVar("holes"))));
 
@@ -102,12 +100,12 @@ public class PigeonHoleTranslatorTest {
     System.out.println("Done building env");
 
     startTime = System.currentTimeMillis();
-    nl.cwi.swat.formulacircuit.Formula result = translator.translate(env, constraints());
+    nl.cwi.swat.formulacircuit.Formula result = translator.translate(env, new HashSet<>(constraints()));
     System.out.println("Done translating");
     long timeTranslating = System.currentTimeMillis() - startTime;
 
     startTime = System.currentTimeMillis();
-    ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
+    ExternalSolver z3 = new ExternalSolver("/usr/local/bin/z3", List.of("-smt2", "-in"));
     z3.addVariables(ff.getVariables());
     z3.addAssert(result);
     SolverOutcome outcome = z3.solve();
@@ -129,7 +127,7 @@ public class PigeonHoleTranslatorTest {
   public void pigeonHoleProblemIsUnsat(@InRange(minInt = 1, maxInt = 10) int pigeons, @InRange(minInt = 1, maxInt = 10) int holes, boolean optional) {
     assumeThat(holes, lessThan(pigeons));
 
-    System.out.println("");
+    System.out.println();
     System.out.println("Configuration: " + pigeons + " pigeons, " + holes + " holes.");
 
     long startTime = System.currentTimeMillis();
@@ -137,11 +135,13 @@ public class PigeonHoleTranslatorTest {
     long timeCreatingEnv = System.currentTimeMillis() - startTime;
 
     startTime = System.currentTimeMillis();
-    nl.cwi.swat.formulacircuit.Formula result = translator.translate(env, constraints());
+    nl.cwi.swat.formulacircuit.Formula result = translator.translate(env, new HashSet<>(constraints()));
     long timeTranslating = System.currentTimeMillis() - startTime;
 
     if (!optional) {
       assertEquals(BooleanConstant.FALSE, result);
+      System.out.println("Fully lower-bound, outcome : " + result);
+      System.out.println("Total time of running test: " + (timeCreatingEnv + timeTranslating) + " ms");
     } else {
       startTime = System.currentTimeMillis();
       ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
@@ -161,5 +161,39 @@ public class PigeonHoleTranslatorTest {
 
       assertEquals(SolverAnswer.UNSAT, outcome.answer());
     }
+  }
+
+  @Property
+  public void pigeonHoleProblemIsSatWhenThereAreEnoughNests(@InRange(minInt = 1, maxInt = 10) int pigeons, @InRange(minInt = 1, maxInt = 10) int holes) {
+    assumeThat(holes, greaterThanOrEqualTo(pigeons));
+
+    System.out.println();
+    System.out.println("Configuration: " + pigeons + " pigeons, " + holes + " holes.");
+
+    long startTime = System.currentTimeMillis();
+    Environment env = constructEnv(pigeons, holes, true);
+    long timeCreatingEnv = System.currentTimeMillis() - startTime;
+
+    startTime = System.currentTimeMillis();
+    nl.cwi.swat.formulacircuit.Formula result = translator.translate(env, new HashSet<>(constraints()));
+    long timeTranslating = System.currentTimeMillis() - startTime;
+
+    startTime = System.currentTimeMillis();
+    ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
+    z3.addVariables(ff.getVariables());
+    z3.addAssert(result);
+    SolverOutcome outcome = z3.solve();
+    long timeSolving = System.currentTimeMillis() - startTime;
+
+    System.out.println("Outcome : " + outcome.answer());
+
+    z3.stop();
+
+    System.out.println("Time creating environment: " + timeCreatingEnv + " ms");
+    System.out.println("Time translating: " + timeTranslating + " ms");
+    System.out.println("Time solving SMT in solver: " + timeSolving + " ms");
+    System.out.println("Total time of running test: " + (timeCreatingEnv + timeTranslating + timeSolving) + " ms");
+
+    assertEquals(SolverAnswer.SAT, outcome.answer());
   }
 }

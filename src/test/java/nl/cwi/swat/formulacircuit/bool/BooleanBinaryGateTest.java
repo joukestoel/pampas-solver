@@ -34,7 +34,11 @@ public class BooleanBinaryGateTest {
     BooleanBinaryGate form = new BooleanBinaryGate(BooleanOperator.AND, 1, low, high);
 
     int count = 0;
+    int lastLabel = 0;
     for (Term f : form) {
+      if (f.label() <= lastLabel) {
+        fail("Terms should have increasing labels");
+      }
       count += 1;
     }
 

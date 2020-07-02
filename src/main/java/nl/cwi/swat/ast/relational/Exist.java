@@ -14,4 +14,6 @@ public class Exist extends QuantifiedFormula {
   public <F,R,L> F accept(TranslationVisitor<F,R,L> visitor) {
     return visitor.visit(this);
   }
+
+
 }

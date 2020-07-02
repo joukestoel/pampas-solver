@@ -16,7 +16,7 @@ public class Attribute {
    * @param name field name
    * @param domain domain of the field
    */
-  Attribute(@NonNull final String name, @NonNull final Domain domain) {
+  Attribute(final @NonNull String name, final @NonNull  Domain domain) {
     this.name = name;
     this.domain = domain;
   }

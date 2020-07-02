@@ -33,14 +33,8 @@ public class UnaryIdRelation extends IdsOnlyRelation {
   }
 
   @Override
-  public Relation project(java.util.Set<String> projectedAttributes) {
-    throw new UnsupportedOperationException("Projection of an unary relation is pointless");
-  }
-
-  @Override
   public Relation naturalJoin(@NonNull Relation other) {
     java.util.Set<String> joiningFieldNames = heading.getIntersectingAttributeNames(other.getHeading());
-    java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 
     if (joiningFieldNames.isEmpty()) {
       throw new IllegalArgumentException("No fields to perform natural join on");
@@ -48,6 +42,8 @@ public class UnaryIdRelation extends IdsOnlyRelation {
     if (joiningFieldNames.size() != 1) {
       throw new IllegalStateException("Joining an unary relation should only be joined on a single field");
     }
+
+    java.util.Set<Integer> indicesOfJoinedFields = other.getHeading().getAttributeIndices(joiningFieldNames);
 
     AbstractRelation otherRel = (AbstractRelation) other;
     IndexedRows indexedOtherRows = otherRel.index(joiningFieldNames);

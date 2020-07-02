@@ -30,7 +30,6 @@ public abstract class BinaryFormula extends Formula {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(left, right);
   }
 }

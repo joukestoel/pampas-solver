@@ -5,3 +5,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public interface Assembler {
   Term assemble(@NonNull Operator op, @NonNull Term t1, @NonNull Term t2);
 }
+
+abstract class AbstractAssembler implements Assembler {
+//  private final int reductionDepth;
+
+}

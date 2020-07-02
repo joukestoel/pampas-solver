@@ -2,7 +2,7 @@ package nl.cwi.swat.ast.relational;
 
 import nl.cwi.swat.ast.TranslationVisitor;
 
-public class And extends BinaryFormula {
+public final class And extends BinaryFormula {
 
   public And(Formula left, Formula right) {
     super(left, right);

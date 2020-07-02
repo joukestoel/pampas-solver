@@ -64,7 +64,7 @@ public class ExternalSolver implements SmtSolver {
         sort = "Int";
       }
 
-      run(String.format("(declare-const %s %s)", t.toString(), sort));
+      run(String.format("(declare-const %s %s)", t, sort));
     }
   }
 
@@ -88,7 +88,6 @@ public class ExternalSolver implements SmtSolver {
   private void run(String cmd) {
     synchronized (reader) {
       try {
-//        System.out.println(cmd);
         solverOut.write(cmd + "\n");
         solverOut.flush();
 
@@ -101,7 +100,6 @@ public class ExternalSolver implements SmtSolver {
 
   private void write(String partial) {
     try {
-//      System.out.print(partial);
       solverOut.write(partial);
     } catch (IOException e) {
       throw new IllegalStateException("Unable to write partial formula to SMT solver");
@@ -126,13 +124,9 @@ public class ExternalSolver implements SmtSolver {
 
   private Set<Term> getCurrentAssignedValues() {
     write("(get-value (");
-    for (Term v: variables) {
-      write(v + " ");
-    }
+    variables.forEach(v -> write(v + " "));
     write("))");
     pushToSolver();
-
-//    System.out.println(lastResult);
 
     return PersistentTrieSet.transientOf();
   }

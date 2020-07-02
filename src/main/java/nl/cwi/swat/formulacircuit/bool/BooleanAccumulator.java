@@ -9,6 +9,7 @@ import nl.cwi.swat.formulacircuit.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public class BooleanAccumulator implements Formula {
   private Map.Transient<Long, Term> inputs;
@@ -101,18 +102,13 @@ public class BooleanAccumulator implements Formula {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    BooleanAccumulator formulas = (BooleanAccumulator) o;
-
-    if (!inputs.equals(formulas.inputs)) return false;
-    return operator.equals(formulas.operator);
+    BooleanAccumulator terms = (BooleanAccumulator) o;
+    return inputs.equals(terms.inputs) &&
+            operator.equals(terms.operator);
   }
 
   @Override
   public int hashCode() {
-    int  hash = inputs.hashCode();
-    hash = 31 * hash + operator.hashCode();
-
-    return hash;
+    return Objects.hash(inputs, operator);
   }
 }

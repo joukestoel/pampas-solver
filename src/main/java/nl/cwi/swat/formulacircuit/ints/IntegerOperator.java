@@ -7,35 +7,35 @@ public abstract class IntegerOperator extends Operator {
     super(ordinal);
   }
 
-  public static final IntegerOperator EQUAL = new IntegerOperator(5) {
+  public static final IntegerOperator EQUAL = new IntegerOperator(4) {
     @Override
     public String toString() {
       return "=";
     }
   };
 
-  public static final IntegerOperator GT = new IntegerOperator(6) {
+  public static final IntegerOperator GT = new IntegerOperator(5) {
     @Override
     public String toString() {
       return ">";
     }
   };
 
-  public static final IntegerOperator GTE = new IntegerOperator(7) {
+  public static final IntegerOperator GTE = new IntegerOperator(6) {
     @Override
     public String toString() {
       return ">=";
     }
   };
 
-  public static final IntegerOperator LT = new IntegerOperator(8) {
+  public static final IntegerOperator LT = new IntegerOperator(7) {
     @Override
     public String toString() {
       return "<";
     }
   };
 
-  public static final IntegerOperator LTE = new IntegerOperator(9) {
+  public static final IntegerOperator LTE = new IntegerOperator(8) {
     @Override
     public String toString() {
       return "<=";
