@@ -1,6 +1,7 @@
 package nl.cwi.swat.ast;
 
 import nl.cwi.swat.ast.relational.*;
+import nl.cwi.swat.translation.TranslationVisitor;
 
 import java.util.List;
 import java.util.stream.Collectors;

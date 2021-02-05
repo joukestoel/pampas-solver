@@ -29,6 +29,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
+          <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+
           <compilerArguments>
             <Xmaxerrs>10000</Xmaxerrs>
             <Xmaxwarns>10000</Xmaxwarns>
@@ -39,6 +41,11 @@
               <artifactId>dagger-compiler</artifactId>
               <version>2.28</version>
             </path>
+<!--            <path>-->
+<!--              <groupId>org.checkerframework</groupId>-->
+<!--              <artifactId>checker</artifactId>-->
+<!--              <version>3.10.0</version>-->
+<!--            </path>-->
           </annotationProcessorPaths>
 <!--          <annotationProcessors>-->
 <!--            <annotationProcessor>-->
@@ -55,8 +62,8 @@
 <!--            </annotationProcessor>-->
 <!--          </annotationProcessors>-->
           <compilerArgs>
-<!--            <arg>-AprintErrorStack</arg>-->
-            <arg>-Awarns</arg>
+            <arg>-AprintErrorStack</arg>
+<!--            <arg>-Awarns</arg>-->
           </compilerArgs>
         </configuration>
       </plugin>
@@ -69,7 +76,7 @@
   </build>
 
   <dependencies>
-    <!-- Hash Trie datastructure needed for Relations -->
+    <!-- Hash Trie datastructure needed for Relation data structure -->
     <dependency>
       <groupId>io.usethesource</groupId>
       <artifactId>capsule</artifactId>
@@ -95,12 +102,6 @@
       <artifactId>checker-qual</artifactId>
       <version>3.10.0</version>
     </dependency>
-
-    <!--<dependency>-->
-      <!--<groupId>org.checkerframework</groupId>-->
-      <!--<artifactId>jdk8</artifactId>-->
-      <!--<version>2.7.0</version>-->
-    <!--</dependency>-->
 
     <!-- Cache implementation -->
     <dependency>

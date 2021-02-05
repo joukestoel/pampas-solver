@@ -1,6 +1,6 @@
 package nl.cwi.swat.ast.relational;
 
-import nl.cwi.swat.ast.TranslationVisitor;
+import nl.cwi.swat.translation.TranslationVisitor;
 
 public final class And extends BinaryFormula {
 

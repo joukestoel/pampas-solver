@@ -1,4 +1,4 @@
-package nl.cwi.swat.ast;
+package nl.cwi.swat.translation;
 
 import nl.cwi.swat.ast.relational.*;
 

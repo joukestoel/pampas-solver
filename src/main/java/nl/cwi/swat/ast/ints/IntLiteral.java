@@ -1,7 +1,7 @@
 package nl.cwi.swat.ast.ints;
 
 import nl.cwi.swat.ast.relational.Literal;
-import nl.cwi.swat.ast.TranslationVisitor;
+import nl.cwi.swat.translation.TranslationVisitor;
 
 public class IntLiteral extends Literal<Integer> {
   public IntLiteral(Integer value) {

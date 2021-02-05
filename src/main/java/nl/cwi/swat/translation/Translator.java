@@ -1,6 +1,5 @@
 package nl.cwi.swat.translation;
 
-import nl.cwi.swat.ast.*;
 import nl.cwi.swat.ast.relational.*;
 import nl.cwi.swat.ast.relational.Literal;
 import nl.cwi.swat.formulacircuit.Formula;
