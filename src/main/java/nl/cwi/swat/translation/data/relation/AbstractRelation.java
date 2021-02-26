@@ -38,6 +38,11 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
+  public int arity() {
+    return heading.arity();
+  }
+
+  @Override
   public boolean unionCompatible(@NonNull Relation other) {
     return heading.isUnionCompatible(other.getHeading());
   }
@@ -164,6 +169,12 @@ public abstract class AbstractRelation implements Relation {
     }
 
     return sb.toString();
+  }
+
+  protected void checkUnionCompatibility(@NonNull Relation other) {
+    if (!unionCompatible(other)) {
+      throw new IllegalArgumentException("Other relation is not union compatible with this relation");
+    }
   }
 
   public class IndexedRows implements Iterable<Tuple> {

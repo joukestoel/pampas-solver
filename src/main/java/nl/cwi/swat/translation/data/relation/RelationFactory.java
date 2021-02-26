@@ -17,6 +17,7 @@ import nl.cwi.swat.translation.Index;
 import nl.cwi.swat.translation.data.relation.idsonly.BinaryIdRelation;
 import nl.cwi.swat.translation.data.relation.idsonly.NaryIdRelation;
 import nl.cwi.swat.translation.data.relation.idsonly.UnaryIdRelation;
+import nl.cwi.swat.translation.data.relation.mixed.stable.UnaryStableRelation;
 import nl.cwi.swat.translation.data.row.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -58,7 +59,7 @@ public class RelationFactory {
 
   private Relation buildStableRelation(@NonNull Heading heading, Map.Immutable<Tuple, Constraint> rows) {
     switch(heading.arity()) {
-//      case 1: return new UnaryStableRelation(heading, rows, this, ff);
+      case 1: return new UnaryStableRelation(heading, rows, this, ff, index.getCache());
       default: throw new IllegalArgumentException(String.format("Unable to build an stable relation with arity %d", heading.arity()));
     }
   }

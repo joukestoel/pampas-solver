@@ -127,7 +127,7 @@ class BinaryTuple extends AbstractTuple {
 
   @Override
   public String toString() {
-    return "<" + att1 + "," + att2 + ">";
+    return "<" + att1 + " , " + att2 + ">";
   }
 
   @Override
@@ -201,7 +201,7 @@ class TernaryTuple extends AbstractTuple {
 
   @Override
   public String toString() {
-    return "<" + att1 + "," + att2 + "," + att3 + ">";
+    return "<" + att1 + " , " + att2 + " , " + att3 + ">";
   }
 
   @Override
@@ -281,7 +281,7 @@ class FourAttributesTuple extends AbstractTuple {
 
   @Override
   public String toString() {
-    return "<" + att1 + "," + att2 + "," + att3 + "," + att4 + ">";
+    return "<" + att1 + " , " + att2 + " , " + att3 + " , " + att4 + ">";
   }
 
   @Override
@@ -367,7 +367,7 @@ class FiveAttributesTuple extends AbstractTuple {
 
   @Override
   public String toString() {
-    return "<" + att1 + "," + att2 + "," + att3 + "," + att4 + "," + att5 + ">";
+    return "<" + att1 + " , " + att2 + " , " + att3 + " , " + att4 + " , " + att5 + ">";
   }
 
   @Override
@@ -448,6 +448,10 @@ class NaryTuple extends AbstractTuple {
     StringBuilder sb = new StringBuilder("<");
     for (int i = 0; i < atts.length; i++) {
       sb.append(atts[i]);
+
+      if (i < atts.length - 1) {
+        sb.append(" , ");
+      }
     }
     sb.append(">");
     return sb.toString();

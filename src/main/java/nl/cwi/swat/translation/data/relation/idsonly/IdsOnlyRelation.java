@@ -26,6 +26,12 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     super(heading, rows, rf, ff, indexCache);
   }
 
+  private void checkType(@NonNull Relation other) {
+    if (!(other instanceof IdsOnlyRelation)) {
+      throw new IllegalArgumentException("Can only union other id only relations");
+    }
+  }
+
   @Override
   public boolean isStable() {
     return true;
@@ -34,23 +40,6 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   @Override
   public Relation rename(java.util.Map<String, String> renamings) {
     return rf.buildRelation(heading.rename(renamings), rows, true);
-  }
-
-  private void checkUnionCompatibility(@NonNull Relation other) {
-    if (!unionCompatible(other)) {
-      throw new IllegalArgumentException("Other relation is not union compatible with this relation");
-    }
-  }
-
-  private void checkType(@NonNull Relation other) {
-    if (!(other instanceof IdsOnlyRelation)) {
-      throw new IllegalArgumentException("Can only union other id only relations");
-    }
-  }
-
-  @Override
-  public int arity() {
-    return heading.arity();
   }
 
   @Override
@@ -76,10 +65,7 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
         // update exists field
         Constraint rc = largest.remove(tuple);
         Formula result = ff.or(rc.exists(), smallest.get(tuple).exists());
-
-        if (!BooleanConstant.FALSE.equals(result)) {
-          largest.__put(tuple, TupleConstraintFactory.buildConstraint(result));
-        }
+        largest.__put(tuple, TupleConstraintFactory.buildConstraint(result));
       } else {
         // add tuple
         largest.__put(tuple, smallest.get(tuple));
@@ -98,29 +84,31 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
     IdsOnlyRelation otherRel = (IdsOnlyRelation) other;
 
     Map.Immutable<Tuple, Constraint> largest;
-    Map.Immutable<Tuple, Constraint> smallest;
+    Map.Transient<Tuple, Constraint> smallest;
 
-    if (this.nrOfRows() < otherRel.nrOfRows()) {
+    if (this.nrOfRows() > otherRel.nrOfRows()) {
       largest = rows;
-      smallest = otherRel.rows;
+      smallest = otherRel.rows.asTransient();
     } else {
       largest = otherRel.rows;
-      smallest = rows;
+      smallest = rows.asTransient();
     }
-
-    Map.Transient<Tuple, Constraint> result = PersistentTrieMap.transientOf();
 
     for (Tuple tuple : smallest.keySet()) {
       if (largest.containsKey(tuple)) {
-        Formula conjoined = ff.and(largest.get(tuple).exists(), smallest.get(tuple).exists());
+        Formula exists = ff.and(largest.get(tuple).exists(), smallest.get(tuple).exists());
 
-        if (!BooleanConstant.FALSE.equals(conjoined)) {
-          result.__put(tuple, TupleConstraintFactory.buildConstraint(conjoined));
+        if (!BooleanConstant.FALSE.equals(exists)) {
+          smallest.__put(tuple, TupleConstraintFactory.buildConstraint(exists));
+        } else {
+          smallest.__remove(tuple);
         }
+      } else {
+        smallest.__remove(tuple);
       }
     }
 
-    return rf.buildRelation(heading, result.freeze(), true);
+    return rf.buildRelation(heading, smallest.freeze(), true);
   }
 
   @Override
