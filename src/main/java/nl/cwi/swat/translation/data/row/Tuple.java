@@ -1,15 +1,26 @@
 package nl.cwi.swat.translation.data.row;
 
+import nl.cwi.swat.ast.relational.Hole;
+import nl.cwi.swat.formulacircuit.Constant;
 import nl.cwi.swat.formulacircuit.Expression;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 
 public interface Tuple extends Iterable<Expression>{
   int arity();
   Expression getAttributeAt(int i);
+
+  default Set<Integer> getStableTupleIndices() {
+    Set<Integer> indices = new HashSet<>(arity());
+    for (int i = 0; i < arity(); i++) {
+      if (getAttributeAt(i) instanceof Constant) {
+        indices.add(i);
+      }
+    }
+
+    return indices;
+  }
 }
 
 abstract class AbstractTuple implements Tuple { }
@@ -40,13 +51,18 @@ class EmptyTuple extends AbstractTuple {
   public String toString() {
     return "<>";
   }
+
 }
 
 class UnaryTuple extends AbstractTuple {
   private final Expression att;
 
+  private final Set<Integer> stable;
+
   UnaryTuple(@NonNull Expression att) {
     this.att = att;
+
+    stable = att instanceof Hole ? Set.of(0) : Collections.emptySet();
   }
 
   @Override

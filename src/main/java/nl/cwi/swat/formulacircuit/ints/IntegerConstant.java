@@ -1,15 +1,12 @@
 package nl.cwi.swat.formulacircuit.ints;
 
-import nl.cwi.swat.formulacircuit.Expression;
-import nl.cwi.swat.formulacircuit.Operator;
-import nl.cwi.swat.formulacircuit.SolverVisitor;
-import nl.cwi.swat.formulacircuit.Term;
+import nl.cwi.swat.formulacircuit.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
 import java.util.Iterator;
 
-public class IntegerConstant implements Expression {
+public class IntegerConstant implements Expression, Constant {
   private final long label;
   private final int val;
   private int hash;

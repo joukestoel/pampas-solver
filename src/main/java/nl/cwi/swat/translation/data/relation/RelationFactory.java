@@ -3,6 +3,7 @@ package nl.cwi.swat.translation.data.relation;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
+import io.usethesource.capsule.core.PersistentTrieSet;
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.ints.IntLiteral;
 import nl.cwi.swat.ast.relational.Hole;
@@ -23,10 +24,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Singleton
 public class RelationFactory {
@@ -161,11 +160,14 @@ public class RelationFactory {
   }
 
   private class RelationUnderConstruction extends AbstractRelation {
-    private final IndexedRows indexedRows;
+    private IndexedRows indexedRows;
 
     private boolean stable;
-    private final Set<String> partialKey;
-    private final Set<Integer> partialKeyIndices;
+//    private final Set<String> partialKey;
+//    private final Set<Integer> partialKeyIndices;
+
+//    private Set<String> stableKey;
+    private Set<Integer> stableKeyIndices;
 
     RelationUnderConstruction(@NonNull Heading heading) {
       this(heading, PersistentTrieMap.of(), RelationFactory.this, RelationFactory.this.ff, RelationFactory.this.index.getCache());
@@ -176,8 +178,11 @@ public class RelationFactory {
                                      @NonNull Cache<IndexCacheKey, IndexedRows> indexCache) {
       super(heading, rows, rf, ff, indexCache);
 
-      partialKey = heading.getNamesOfIdDomainAttributes();
-      partialKeyIndices = heading.getAttributeIndices(partialKey);
+//      partialKey = heading.getNamesOfIdDomainAttributes();
+//      partialKeyIndices = heading.getAttributeIndices(partialKey);
+
+      // Initially the whole relation is stable (no holes introduced yet)
+      stableKeyIndices = heading.getAttributeIndices();
 
       indexedRows = new IndexedRows();
 
@@ -203,18 +208,40 @@ public class RelationFactory {
         throw new IllegalArgumentException("Tuple to be added is not compatible with relation");
       }
 
-      Tuple key = TupleFactory.buildPartialTuple(tuple, partialKeyIndices);
-      Optional<io.usethesource.capsule.Set.Transient<Row>> existingRows = indexedRows.get(key);
-
-      if (!existingRows.isPresent()) {
-        // tuple (or partial tuple) does not yet exists, can be safely added
-        indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists));
+      if (heading.containsOnlyIdAttributes()) {
+        // no holes possible
+        indexedRows.add(tuple, tuple, TupleConstraintFactory.buildConstraint(exists));
       } else {
-        // partial tuple does already exist, tuples could potentially collapse into each other, add constraints to prevent this
-        indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists, constraintAttributes(tuple, existingRows.get())));
+        Set<Integer> stableTupleIndices = tuple.getStableTupleIndices();
 
-        // flip the stable property. Since overlap is possible this is not a stable relation anymore
-        stable = false;
+        if (!stableTupleIndices.equals(stableKeyIndices)) {
+          io.usethesource.capsule.Set<Integer> intersect = PersistentTrieSet.transientOf();
+
+          for (Integer stableKeyIndex : stableKeyIndices) {
+            if (stableTupleIndices.contains(stableKeyIndex)) {
+              intersect.add(stableKeyIndex);
+            }
+          }
+
+          if (!stableKeyIndices.equals(intersect)) {
+            // The calculated intersection of the stable keys is not equal to the previous value, the indexed rows need to be recalculated
+            indexedRows = indexedRows.reindex(intersect);
+            stableKeyIndices = intersect;
+          }
+
+          stable = false;
+        }
+
+        Tuple key = TupleFactory.buildPartialTuple(tuple, stableKeyIndices);
+        Optional<io.usethesource.capsule.Set.Transient<Row>> existingRows = indexedRows.get(key);
+
+        if (!existingRows.isPresent()) {
+          // tuple (or partial tuple) does not yet exists, can be safely added
+          indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists));
+        } else {
+          // partial tuple does already exist, tuples could potentially collapse into each other, add constraints to prevent this
+          indexedRows.add(key, tuple, TupleConstraintFactory.buildConstraint(exists, constraintAttributes(tuple, existingRows.get())));
+        }
       }
     }
 
@@ -225,7 +252,7 @@ public class RelationFactory {
         // Build a and gate constraining all the attributes to be equal
         BooleanAccumulator innerAnd = BooleanAccumulator.AND();
         for (int i = 0; i < toBeAdded.arity(); i++) {
-          if (!partialKeyIndices.contains(i)) {
+          if (!stableKeyIndices.contains(i)) {
             innerAnd.add(ff.equal(toBeAdded.getAttributeAt(i), rac.getTuple().getAttributeAt(i)));
           }
         }

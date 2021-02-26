@@ -38,25 +38,17 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
   }
 
   @Override
-  public Relation rename(java.util.Map<String, String> renamings) {
-    return rf.buildRelation(heading.rename(renamings), rows, true);
-  }
-
-  @Override
   public Relation union(@NonNull Relation other) {
     checkUnionCompatibility(other);
-    checkType(other);
-
-    IdsOnlyRelation otherRel = (IdsOnlyRelation)other;
 
     Map.Transient<Tuple, Constraint> largest;
     Map.Immutable<Tuple, Constraint> smallest;
 
-    if (this.nrOfRows() > otherRel.nrOfRows()) {
+    if (this.nrOfRows() > other.nrOfRows()) {
       largest = rows.asTransient();
-      smallest = otherRel.rows;
+      smallest = other.rows();
     } else {
-      largest = otherRel.rows.asTransient();
+      largest = other.rows().asTransient();
       smallest = rows;
     }
 
@@ -74,7 +66,6 @@ public abstract class IdsOnlyRelation extends AbstractRelation {
 
     return rf.buildRelation(heading, largest.freeze(), true);
   }
-
 
   @Override
   public Relation intersect(@NonNull Relation other) {

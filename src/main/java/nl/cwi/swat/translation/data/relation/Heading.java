@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The Heading of a {@link Relation}.
@@ -74,6 +75,10 @@ public class Heading implements Iterable<Attribute> {
     }
 
     return indices;
+  }
+
+  public Set<Integer> getAttributeIndices() {
+    return IntStream.range(0, attributes.size()).boxed().collect(Collectors.toUnmodifiableSet());
   }
 
   @NonNull

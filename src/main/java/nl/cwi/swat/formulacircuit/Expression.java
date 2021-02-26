@@ -1,4 +1,3 @@
 package nl.cwi.swat.formulacircuit;
 
-public interface Expression extends Term {
-}
+public interface Expression extends Term { }

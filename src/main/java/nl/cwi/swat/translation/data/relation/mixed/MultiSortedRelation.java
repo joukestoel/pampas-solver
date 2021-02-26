@@ -9,6 +9,7 @@ import nl.cwi.swat.translation.data.relation.AbstractRelation;
 import nl.cwi.swat.translation.data.relation.Heading;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
+import nl.cwi.swat.translation.data.relation.mixed.stable.StableRelation;
 import nl.cwi.swat.translation.data.row.Constraint;
 import nl.cwi.swat.translation.data.row.Tuple;
 import nl.cwi.swat.translation.data.row.TupleConstraintFactory;
@@ -20,20 +21,54 @@ public abstract class MultiSortedRelation extends AbstractRelation {
     super(heading, rows, rf, ff, indexCache);
   }
 
-  @Override
-  public Relation union(Relation other) {
-    checkUnionCompatibility(other);
+  protected Relation stableIntersection(Relation other) {
+    assert other instanceof StableRelation;
 
-    MultiSortedRelation otherRel = (MultiSortedRelation) other;
+    Map.Immutable<Tuple, Constraint> largest;
+    Map.Transient<Tuple, Constraint> smallest;
+
+    if (this.nrOfRows() > other.nrOfRows()) {
+      largest = rows;
+      smallest = other.rows().asTransient();
+    } else {
+      largest = other.rows();
+      smallest = rows.asTransient();
+    }
+
+    for (Tuple tuple: smallest.keySet()) {
+      if (largest.containsKey(tuple)) {
+        Constraint rc = largest.get(tuple);
+        Constraint lc = smallest.get(tuple);
+
+        Formula exists = ff.and(rc.exists(), lc.exists());
+        if (!BooleanConstant.FALSE.equals(exists)) {
+          smallest.__put(tuple, TupleConstraintFactory.buildConstraint(exists));
+        } else {
+          smallest.__remove(tuple);
+        }
+      } else {
+        smallest.__remove(tuple);
+      }
+    }
+
+    return rf.buildRelation(heading, smallest.freeze(), true);
+  }
+
+  protected Relation unstableIntersection(Relation other) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  protected Relation stableUnion(Relation other) {
+    assert other instanceof StableRelation;
 
     Map.Transient<Tuple, Constraint> largest;
     Map.Immutable<Tuple, Constraint> smallest;
 
-    if (this.nrOfRows() > otherRel.nrOfRows()) {
+    if (this.nrOfRows() > other.nrOfRows()) {
       largest = rows.asTransient();
-      smallest = otherRel.rows;
+      smallest = other.rows();
     } else {
-      largest = otherRel.rows.asTransient();
+      largest = other.rows().asTransient();
       smallest = rows;
     }
 
@@ -42,10 +77,7 @@ public abstract class MultiSortedRelation extends AbstractRelation {
         // update exists field
         Constraint rc = largest.remove(tuple);
         Formula result = ff.or(rc.exists(), smallest.get(tuple).exists());
-
-        if (!BooleanConstant.FALSE.equals(result)) {
-          largest.__put(tuple, TupleConstraintFactory.buildConstraint(result));
-        }
+        largest.__put(tuple, TupleConstraintFactory.buildConstraint(result));
       } else {
         // add tuple
         largest.__put(tuple, smallest.get(tuple));
@@ -55,4 +87,7 @@ public abstract class MultiSortedRelation extends AbstractRelation {
     return rf.buildRelation(heading, largest.freeze(), true);
   }
 
+  protected Relation unstableUnion(Relation other) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
 }

@@ -48,6 +48,16 @@ public abstract class AbstractRelation implements Relation {
   }
 
   @Override
+  public Map.Immutable<Tuple, Constraint> rows() {
+    return rows;
+  }
+
+  @Override
+  public Relation rename(java.util.Map<String, String> renamings) {
+    return rf.buildRelation(heading.rename(renamings), rows, true);
+  }
+
+  @Override
   public Formula equal(Relation other) {
     return ff.and(subset(other), other.subset(this));
   }
@@ -217,6 +227,19 @@ public abstract class AbstractRelation implements Relation {
       }
 
       return flattened.freeze();
+    }
+
+    public IndexedRows reindex(Set<Integer> indices) {
+      IndexedRows newRows = new IndexedRows();
+
+      for (Set<Row> rows : indexedRows.values()) {
+        for (Row rac : rows) {
+          Tuple key = TupleFactory.buildPartialTuple(rac.getTuple(), indices);
+          newRows.add(key, rac.getTuple(), rac.getConstraint());
+        }
+      }
+
+      return newRows;
     }
 
     @Override

@@ -35,28 +35,12 @@ public class UnaryStableRelation extends StableRelation {
   }
 
   @Override
-  public Relation rename(java.util.Map<String, String> renamings) {
-    return null;
-  }
-
-  @Override
   public Relation project(Set<String> projectedAttributes) {
     return null;
   }
 
   @Override
   public Relation restrict() {
-    return null;
-  }
-
-  @Override
-  public Relation intersect(Relation other) {
-    checkUnionCompatibility(other);
-
-    if (other.isStable()) {
-      return stableIntersection((UnaryStableRelation)other);
-    }
-
     return null;
   }
 
