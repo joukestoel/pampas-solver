@@ -106,6 +106,7 @@ public class PigeonHoleTranslatorTest {
 
     startTime = System.currentTimeMillis();
     ExternalSolver z3 = new ExternalSolver("/usr/local/bin/z3", List.of("-smt2", "-in"));
+    z3.start();
     z3.addVariables(ff.getVariables());
     z3.addAssert(result);
     SolverOutcome outcome = z3.solve();
@@ -145,6 +146,7 @@ public class PigeonHoleTranslatorTest {
     } else {
       startTime = System.currentTimeMillis();
       ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
+      z3.start();
       z3.addVariables(ff.getVariables());
       z3.addAssert(result);
       SolverOutcome outcome = z3.solve();
@@ -180,6 +182,7 @@ public class PigeonHoleTranslatorTest {
 
     startTime = System.currentTimeMillis();
     ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
+    z3.start();
     z3.addVariables(ff.getVariables());
     z3.addAssert(result);
     SolverOutcome outcome = z3.solve();

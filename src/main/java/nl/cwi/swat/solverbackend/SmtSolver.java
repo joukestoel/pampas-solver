@@ -7,6 +7,8 @@ import nl.cwi.swat.formulacircuit.Term;
 
 public interface SmtSolver {
 
+  void start();
+
   void addVariables(Set<Term> variables);
 
   void addAssert(Formula formula);

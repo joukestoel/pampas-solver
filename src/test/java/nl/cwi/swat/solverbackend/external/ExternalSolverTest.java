@@ -13,6 +13,8 @@ class ExternalSolverTest {
   @Test
   void canStartAndStopExternalSolverWithoutException() {
     ExternalSolver z3 = new ExternalSolver("/usr/local/bin/z3", List.of("-smt2", "-in"));
+
+    z3.start();
     z3.stop();
   }
 }

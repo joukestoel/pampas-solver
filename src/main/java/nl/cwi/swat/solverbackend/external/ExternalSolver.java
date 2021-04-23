@@ -15,20 +15,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExternalSolver implements SmtSolver {
-  private final Process smtSolver;
+  private Process smtSolver;
 
-  private final ThreadedInputStreamReader reader;
-  private final OutputStreamWriter solverOut;
+  private ThreadedInputStreamReader reader;
+  private OutputStreamWriter solverOut;
 
   private String lastResult;
 
   private Set<Term> variables;
   private SolverWriter writer;
 
-  public ExternalSolver(String executable, List<String> options) {
-    List<String> commands = new ArrayList<>(options);
-    commands.add(0, executable);
+  private final List<String> commands;
 
+  public ExternalSolver(String executable, List<String> options) {
+    commands = new ArrayList<>(options);
+    commands.add(0, executable);
+  }
+
+  @Override
+  public void start() {
     smtSolver = startSolver(commands);
 
     writer = new SolverWriter();
