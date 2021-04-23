@@ -84,11 +84,11 @@
     </dependency>
 
     <!-- Z3 SMT solver -->
-    <!--<dependency>-->
-      <!--<groupId>org.sosy-lab</groupId>-->
-      <!--<artifactId>javasmt-solver-z3</artifactId>-->
-      <!--<version>z3-4.4.1-788-g8df145d</version>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>io.github.tudo-aqua</groupId>
+      <artifactId>z3-turnkey</artifactId>
+      <version>4.8.7</version>
+    </dependency>
 
     <!-- Checker framework -->
     <dependency>
