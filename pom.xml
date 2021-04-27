@@ -87,7 +87,7 @@
     <dependency>
       <groupId>io.github.tudo-aqua</groupId>
       <artifactId>z3-turnkey</artifactId>
-      <version>4.8.7</version>
+      <version>4.8.10</version>
     </dependency>
 
     <!-- Checker framework -->
