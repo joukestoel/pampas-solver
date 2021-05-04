@@ -105,7 +105,7 @@ public class PigeonHoleTranslatorTest {
     long timeTranslating = System.currentTimeMillis() - startTime;
 
     startTime = System.currentTimeMillis();
-    ExternalSolver z3 = new ExternalSolver("/usr/local/bin/z3", List.of("-smt2", "-in"));
+    ExternalSolver z3 = new ExternalSolver("z3", List.of("-smt2", "-in"));
     z3.start();
     z3.addVariables(ff.getVariables());
     z3.addAssert(result);
