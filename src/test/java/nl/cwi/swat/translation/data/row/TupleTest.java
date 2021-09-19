@@ -1,47 +1,51 @@
 package nl.cwi.swat.translation.data.row;
 
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.Assume;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
 import nl.cwi.swat.formulacircuit.Expression;
 import nl.cwi.swat.formulacircuit.rel.IdConstant;
-import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnitQuickcheck.class)
-public class TupleTest {
+class TupleTest {
 
   @Property
-  public void twoTuplesWithSameAttributesAreEqual(@InRange(minInt = 0, maxInt = 50) int arity) {
+  void twoTuplesWithSameAttributesAreEqual(
+          @ForAll @IntRange(max = 50) int arity) {
     assertEquals(create(arity), create(arity));
   }
 
   @Property
-  public void arityIsEqualToNumberOfAttributesInTuple(@InRange(minInt = 0, maxInt = 50) int arity) {
+  void arityIsEqualToNumberOfAttributesInTuple(
+          @ForAll @IntRange(max = 50) int arity) {
     assertEquals(arity, create(arity).arity());
   }
 
   @Property
-  public void tuplesAreIterable(@InRange(minInt = 0, maxInt = 50) int arity) {
+  void tuplesAreIterable(
+          @ForAll @IntRange(max = 50) int arity) {
     checkIterable(create(arity), arity);
   }
 
   @Property
-  public void gettingAttributesOutsideBoundsThrowsAnException(@InRange(minInt = 0, maxInt = 50) int arity) {
-    assertThrows(IllegalArgumentException.class, () -> create(arity).getAttributeAt(arity+1));
+  void gettingAttributesOutsideBoundsThrowsAnException(
+          @ForAll @IntRange(max = 50) int arity) {
+    assertThrows(IllegalArgumentException.class, () -> create(arity).getAttributeAt(arity + 1));
   }
 
   @Property
-  public void tuplesAreOrdered(@InRange(minInt = 0, maxInt = 50) int arity)  {
+  void tuplesAreOrdered(
+          @ForAll @IntRange(max = 50) int arity) {
     checkOrder(create(arity));
   }
 
   @Property
-  public void tuplesOfDifferentArityAreNotEqual(@InRange(minInt = 0, maxInt = 50) int arity1, @InRange(minInt = 0, maxInt = 50) int arity2) {
-    assumeThat(arity1, not(arity2));
+  void tuplesOfDifferentArityAreNotEqual(
+          @ForAll @IntRange(max = 50) int arity1,
+          @ForAll @IntRange(max = 50) int arity2) {
+    Assume.that(arity1 != arity2);
 
     assertNotEquals(create(arity1), create(arity2));
   }
@@ -63,13 +67,20 @@ public class TupleTest {
 
   private Tuple create(Expression... atts) {
     switch (atts.length) {
-      case 0: return EmptyTuple.EMPTY;
-      case 1: return new UnaryTuple(atts[0]);
-      case 2: return new BinaryTuple(atts[0],atts[1]);
-      case 3: return new TernaryTuple(atts[0],atts[1],atts[2]);
-      case 4: return new FourAttributesTuple(atts[0],atts[1],atts[2],atts[3]);
-      case 5: return new FiveAttributesTuple(atts[0],atts[1],atts[2],atts[3],atts[4]);
-      default:return new NaryTuple(atts);
+      case 0:
+        return EmptyTuple.EMPTY;
+      case 1:
+        return new UnaryTuple(atts[0]);
+      case 2:
+        return new BinaryTuple(atts[0], atts[1]);
+      case 3:
+        return new TernaryTuple(atts[0], atts[1], atts[2]);
+      case 4:
+        return new FourAttributesTuple(atts[0], atts[1], atts[2], atts[3]);
+      case 5:
+        return new FiveAttributesTuple(atts[0], atts[1], atts[2], atts[3], atts[4]);
+      default:
+        return new NaryTuple(atts);
     }
   }
 
@@ -79,7 +90,7 @@ public class TupleTest {
       count++;
     }
 
-    assertEquals(expectedCount,count);
+    assertEquals(expectedCount, count);
   }
 
   private void checkOrder(Tuple tuple) {

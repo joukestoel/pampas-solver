@@ -1,9 +1,10 @@
 package nl.cwi.swat.translation.data.relation.idsonly;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
+import net.jqwik.api.lifecycle.BeforeProperty;
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
@@ -11,19 +12,16 @@ import nl.cwi.swat.formulacircuit.MinimalReducingCircuitFactory;
 import nl.cwi.swat.translation.Index;
 import nl.cwi.swat.translation.data.relation.Relation;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnitQuickcheck.class)
 public class IdsOnlyRelationTest {
   protected RelationFactory rf;
 
-  @Before
+  @BeforeProperty
   @BeforeEach
-  public void setup() {
+  void setup() {
     FormulaFactory ff = new MinimalReducingCircuitFactory();
     Index idx = new Index(Caffeine.newBuilder().recordStats().build());
 
@@ -60,7 +58,9 @@ public class IdsOnlyRelationTest {
   }
 
   @Property
-  public void relationsWithSameHeadingAndRowsAreEqual(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows) {
+  void relationsWithSameHeadingAndRowsAreEqual(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(min = 0, max = 100) int nrOfRows) {
     Relation first  = idOnly("rel", arity, nrOfRows, false);
     Relation second = idOnly("rel", arity, nrOfRows, false);
 

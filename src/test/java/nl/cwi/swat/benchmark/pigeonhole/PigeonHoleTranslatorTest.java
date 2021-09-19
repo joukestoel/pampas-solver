@@ -1,10 +1,12 @@
 package nl.cwi.swat.benchmark.pigeonhole;
 
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.Assume;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Tag;
+import net.jqwik.api.constraints.IntRange;
+import net.jqwik.api.lifecycle.BeforeTry;
 import nl.cwi.swat.DaggerSolverSetup;
-import nl.cwi.swat.Integration;
 import nl.cwi.swat.SolverSetup;
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.relational.*;
@@ -16,31 +18,24 @@ import nl.cwi.swat.solverbackend.external.ExternalSolver;
 import nl.cwi.swat.translation.Environment;
 import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Category(Integration.class)
-@RunWith(JUnitQuickcheck.class)
+@Tag("SolverIntegration")
 public class PigeonHoleTranslatorTest {
   private Translator translator;
   private RelationFactory rf;
   private FormulaFactory ff;
 
-  @Before
   @BeforeEach
+  @BeforeTry
   public void setup() {
     SolverSetup setup = DaggerSolverSetup.builder().build();
     translator = setup.translator();
@@ -127,8 +122,11 @@ public class PigeonHoleTranslatorTest {
   }
 
   @Property
-  public void pigeonHoleProblemIsUnsat(@InRange(minInt = 1, maxInt = 10) int pigeons, @InRange(minInt = 1, maxInt = 10) int holes, boolean optional) {
-    assumeThat(holes, lessThan(pigeons));
+  public void pigeonHoleProblemIsUnsat(
+          @ForAll @IntRange(min = 1, max = 10) int pigeons,
+          @ForAll @IntRange(min = 1, max = 10) int holes,
+          @ForAll boolean optional) {
+    Assume.that(holes < pigeons);
 
     System.out.println();
     System.out.println("Configuration: " + pigeons + " pigeons, " + holes + " holes.");
@@ -168,8 +166,10 @@ public class PigeonHoleTranslatorTest {
   }
 
   @Property
-  public void pigeonHoleProblemIsSatWhenThereAreEnoughNests(@InRange(minInt = 1, maxInt = 10) int pigeons, @InRange(minInt = 1, maxInt = 10) int holes) {
-    assumeThat(holes, greaterThanOrEqualTo(pigeons));
+  public void pigeonHoleProblemIsSatWhenThereAreEnoughNests(
+          @ForAll @IntRange(min = 1, max = 10) int pigeons,
+          @ForAll @IntRange(min = 1, max = 10) int holes) {
+    Assume.that(holes >= pigeons);
 
     System.out.println();
     System.out.println("Configuration: " + pigeons + " pigeons, " + holes + " holes.");

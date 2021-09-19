@@ -1,23 +1,25 @@
 package nl.cwi.swat.translation.data.relation.idsonly;
 
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.Assume;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
 import nl.cwi.swat.translation.data.relation.Relation;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import java.util.Map;
 
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnitQuickcheck.class)
-public class RenamingTest extends IdsOnlyRelationTest {
+class RenamingTest extends IdsOnlyRelationTest {
+
   @Property
-  public void renamingDoesNotChangeNrOfRowsAndArity(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 1, maxInt = 10) int nrOfRows, @InRange(minInt = 0, maxInt = 9) int renameField, String newName) {
-    assumeThat(renameField, lessThan(arity));
+  void renamingDoesNotChangeNrOfRowsAndArity(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(min = 1, max = 10) int nrOfRows,
+          @ForAll @IntRange(max = 9) int renameField,
+          @ForAll String newName) {
+    Assume.that(renameField < arity);
 
     Relation orig = idOnly("rel", arity, nrOfRows, true);
     Relation renamed = orig.rename(Map.of("id_" + renameField, newName));
@@ -28,8 +30,11 @@ public class RenamingTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void renamingOnlyChangesFieldNameOfRenamedFields(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 9) int renameField, String newName) {
-    assumeThat(renameField, lessThan(arity));
+  void renamingOnlyChangesFieldNameOfRenamedFields(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 9) int renameField,
+          @ForAll String newName) {
+    Assume.that(renameField < arity);
 
     Relation orig = idOnly("rel", arity, 10, true);
     Relation renamed = orig.rename(Map.of("id_" + renameField, newName));
@@ -44,8 +49,10 @@ public class RenamingTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void renamingWithSameNameResultsInTheSameRelation(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 9) int renameField) {
-    assumeThat(renameField, lessThan(arity));
+  void renamingWithSameNameResultsInTheSameRelation(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 9) int renameField) {
+    Assume.that(renameField < arity);
 
     Relation orig = idOnly("rel", arity, 10, true);
 
@@ -54,8 +61,10 @@ public class RenamingTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void renamingWithDifferentNameResultsInDifferentRelation(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 9) int renameField) {
-    assumeThat(renameField, lessThan(arity));
+  void renamingWithDifferentNameResultsInDifferentRelation(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 9) int renameField) {
+    Assume.that(renameField < arity);
 
     Relation orig = idOnly("rel", arity, 10, true);
 
@@ -65,7 +74,7 @@ public class RenamingTest extends IdsOnlyRelationTest {
   }
 
   @Test
-  public void renamingANonExistingFieldThrowsAnException() {
+  void renamingANonExistingFieldThrowsAnException() {
     Relation orig = idOnly("rel", 1, 1, true);
     assertThrows(IllegalArgumentException.class, () -> orig.rename(Map.of("non-existing", "will-not-rename")));
   }

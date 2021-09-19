@@ -1,35 +1,32 @@
 package nl.cwi.swat.translation.data.relation;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
+import net.jqwik.api.lifecycle.BeforeProperty;
 import nl.cwi.swat.ast.Domain;
 import nl.cwi.swat.ast.relational.Id;
 import nl.cwi.swat.formulacircuit.FormulaFactory;
 import nl.cwi.swat.formulacircuit.MinimalReducingCircuitFactory;
 import nl.cwi.swat.translation.Index;
-import org.junit.Before;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnitQuickcheck.class)
-public class RelationBuilderTest {
-  private FormulaFactory ff;
-  private Index idx;
+class RelationBuilderTest {
   private RelationFactory rf;
 
-  @Before
-  public void setup() {
-    ff = new MinimalReducingCircuitFactory();
-    idx = new Index(Caffeine.newBuilder().recordStats().build());
+  @BeforeProperty
+  void setup() {
+    FormulaFactory ff = new MinimalReducingCircuitFactory();
+    Index idx = new Index(Caffeine.newBuilder().recordStats().build());
 
     rf = new RelationFactory(ff, idx);
   }
 
   @Property
-  public void unaryIdRelationWithNTupleCreatedHasSameSize(@InRange(minInt = 0, maxInt = 100) int size) {
+  void unaryIdRelationWithNTupleCreatedHasSameSize(
+          @ForAll  @IntRange(max = 100) int size) {
     RelationFactory.Builder.TupleBuilder tupleBuilder = rf.new Builder().create("simple")
             .add("id", Domain.ID).done();
 
@@ -44,7 +41,8 @@ public class RelationBuilderTest {
   }
 
   @Property
-  public void addingSameTupleToUnaryIdRelationDoesNotIncreaseSize(@InRange(minInt = 0, maxInt = 10) int times) {
+  void addingSameTupleToUnaryIdRelationDoesNotIncreaseSize(
+          @ForAll @IntRange(max = 10) int times) {
     RelationFactory.Builder.TupleBuilder tupleBuilder = rf.new Builder().create("simple")
             .add("id", Domain.ID).done();
 

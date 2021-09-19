@@ -1,32 +1,28 @@
 package nl.cwi.swat.translation.data.relation.idsonly;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import nl.cwi.swat.formulacircuit.FormulaFactory;
-import nl.cwi.swat.formulacircuit.MinimalReducingCircuitFactory;
-import nl.cwi.swat.translation.Index;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
 import nl.cwi.swat.translation.data.relation.Relation;
-import nl.cwi.swat.translation.data.relation.RelationFactory;
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnitQuickcheck.class)
-public class IntersectionTest extends IdsOnlyRelationTest {
+class IntersectionTest extends IdsOnlyRelationTest {
   @Property
-  public void intersectionIdentity(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows) {
+  void intersectionIdentity(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 100) int nrOfRows) {
     Relation a = idOnly("A", arity, nrOfRows, false);
 
     assertEquals(a, a.intersect(a));
   }
 
   @Property
-  public void intersectionIsCommutative(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows1, @InRange(minInt = 0, maxInt = 100) int nrOfRows2) {
+  void intersectionIsCommutative(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 100) int nrOfRows1,
+          @ForAll @IntRange(max = 100) int nrOfRows2) {
     Relation a = idOnly("A", arity, nrOfRows1, true);
     Relation b = idOnly("B", arity, nrOfRows2, true);
 
@@ -34,7 +30,11 @@ public class IntersectionTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void intersectionIsAssociative(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows1, @InRange(minInt = 0, maxInt = 100) int nrOfRows2, @InRange(minInt = 0, maxInt = 100) int nrOfRows3) {
+  void intersectionIsAssociative(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 100) int nrOfRows1,
+          @ForAll @IntRange(max = 100) int nrOfRows2,
+          @ForAll @IntRange(max = 100) int nrOfRows3) {
     Relation a = idOnly("A", arity, nrOfRows1, false);
     Relation b = idOnly("B", arity, nrOfRows2, true);
     Relation c = idOnly("C", arity, nrOfRows3, true);
@@ -43,7 +43,10 @@ public class IntersectionTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void intersectionOfTwoRelationsWithoutOverlapResultsInTheEmptyRelation(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows1, @InRange(minInt = 0, maxInt = 100) int nrOfRows2) {
+  void intersectionOfTwoRelationsWithoutOverlapResultsInTheEmptyRelation(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 100) int nrOfRows1,
+          @ForAll @IntRange(max = 100) int nrOfRows2) {
     Relation a = idOnly("A", arity, nrOfRows1, false, "a");
     Relation b = idOnly("B", arity, nrOfRows2, false, "b");
 
@@ -51,7 +54,10 @@ public class IntersectionTest extends IdsOnlyRelationTest {
   }
 
   @Property
-  public void intersectionWithSomeOverlapResultsInARelationWithRows(@InRange(minInt = 1, maxInt = 10) int arity, @InRange(minInt = 0, maxInt = 100) int nrOfRows1, @InRange(minInt = 0, maxInt = 100) int nrOfRows2) {
+  void intersectionWithSomeOverlapResultsInARelationWithRows(
+          @ForAll @IntRange(min = 1, max = 10) int arity,
+          @ForAll @IntRange(max = 100) int nrOfRows1,
+          @ForAll @IntRange(max = 100) int nrOfRows2) {
     Relation a = idOnly("A", arity, nrOfRows1, true);
     Relation b = idOnly("B", arity, nrOfRows2, true);
 
@@ -59,3 +65,4 @@ public class IntersectionTest extends IdsOnlyRelationTest {
   }
 
 }
+

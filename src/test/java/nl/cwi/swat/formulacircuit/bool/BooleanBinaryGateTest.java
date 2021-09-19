@@ -1,23 +1,25 @@
 package nl.cwi.swat.formulacircuit.bool;
 
-import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import net.jqwik.api.Assume;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
 import nl.cwi.swat.formulacircuit.Formula;
 import nl.cwi.swat.formulacircuit.Term;
-import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnitQuickcheck.class)
-public class BooleanBinaryGateTest {
+class BooleanBinaryGateTest {
 
   private Formula createForm(long label) {
     return new BooleanVariable("name", label);
   }
 
   @Property
-  public void binaryGateIsOrdered(long first, long second) {
+  void binaryGateIsOrdered(
+          @ForAll long first,
+          @ForAll long second) {
+    Assume.that(first != second);
+
     Formula f = createForm(first);
     Formula s = createForm(second);
 
@@ -26,19 +28,29 @@ public class BooleanBinaryGateTest {
     assertTrue(form.input(0).label() < form.input(1).label());
   }
 
-  @Test
-  public void binaryGateIsIterable() {
-    Formula low = createForm(2);
-    Formula high = createForm(3);
+  @Property
+  public void binaryGateIsIterable(
+          @ForAll long first,
+          @ForAll long second) {
+    Assume.that(first != second);
+
+    Formula low = createForm(first);
+    Formula high = createForm(second);
+
+    if (second < first) {
+      low = createForm(second);
+      high = createForm(first);
+    }
 
     BooleanBinaryGate form = new BooleanBinaryGate(BooleanOperator.AND, 1, low, high);
 
     int count = 0;
-    int lastLabel = 0;
+    long lastLabel = Long.MIN_VALUE;
     for (Term f : form) {
-      if (f.label() <= lastLabel) {
+      if (f.label() < lastLabel) {
         fail("Terms should have increasing labels");
       }
+      lastLabel = f.label();
       count += 1;
     }
 
