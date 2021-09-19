@@ -28,7 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class PigeonHoleTranslatorTest {
+public class PigeonHoleTranslatorTest {
   private Translator translator;
   private RelationFactory rf;
   private FormulaFactory ff;
