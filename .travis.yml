@@ -4,5 +4,6 @@ before_install:
   - wget https://github.com/Z3Prover/z3/releases/download/z3-4.8.12/z3-4.8.12-x64-glibc-2.31.zip
   - unzip -xvf z3-4.8.12-x64-glibc-2.31.zip
   - rm ./z3-4.8.12-x64-glibc-2.31.zip
+  - export PATH=$PATH:$(pwd)/z3-4.8.12-x64-glibc-2.31/bin
 
-script: mvn test -Pci
+script: mvn test
