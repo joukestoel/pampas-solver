@@ -17,13 +17,15 @@ import nl.cwi.swat.translation.Environment;
 import nl.cwi.swat.translation.Translator;
 import nl.cwi.swat.translation.data.relation.RelationFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
