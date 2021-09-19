@@ -28,8 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("SolverIntegration")
-public class PigeonHoleTranslatorTest {
+class PigeonHoleTranslatorTest {
   private Translator translator;
   private RelationFactory rf;
   private FormulaFactory ff;
@@ -90,6 +89,7 @@ public class PigeonHoleTranslatorTest {
   }
 
   @Test
+  @org.junit.jupiter.api.Tag("SolverIntegration")
   public void pigeonHoleProblemIsUnsatSingularTest() {
     long startTime = System.currentTimeMillis();
     Environment env = constructEnv(5, 4, true);
@@ -122,6 +122,7 @@ public class PigeonHoleTranslatorTest {
   }
 
   @Property
+  @Tag("SolverIntegration")
   public void pigeonHoleProblemIsUnsat(
           @ForAll @IntRange(min = 1, max = 10) int pigeons,
           @ForAll @IntRange(min = 1, max = 10) int holes,
@@ -166,6 +167,7 @@ public class PigeonHoleTranslatorTest {
   }
 
   @Property
+  @Tag("SolverIntegration")
   public void pigeonHoleProblemIsSatWhenThereAreEnoughNests(
           @ForAll @IntRange(min = 1, max = 10) int pigeons,
           @ForAll @IntRange(min = 1, max = 10) int holes) {
