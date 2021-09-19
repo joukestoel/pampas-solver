@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-@Category(Integration.class)
+//@Category(Integration.class)
 class ExternalSolverTest {
 
   @Test

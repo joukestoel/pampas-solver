@@ -6,4 +6,4 @@ before_install:
   - rm ./z3-4.8.12-x64-glibc-2.31.zip
   - export PATH=$PATH:$(pwd)/z3-4.8.12-x64-glibc-2.31/bin
 
-script: mvn test
+script: mvn -Pci test
