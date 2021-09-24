@@ -1,6 +1,7 @@
 language: java
 
 before_install:
+  - sudo apt-get install libstdc++6 -y
   - wget https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip
   - unzip z3-4.8.10-x64-ubuntu-18.04.zip
   - rm ./z3-4.8.10-x64-ubuntu-18.04.zip
