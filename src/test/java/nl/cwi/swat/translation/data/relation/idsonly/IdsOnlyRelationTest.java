@@ -60,7 +60,7 @@ public class IdsOnlyRelationTest {
   @Property
   void relationsWithSameHeadingAndRowsAreEqual(
           @ForAll @IntRange(min = 1, max = 10) int arity,
-          @ForAll @IntRange(min = 0, max = 100) int nrOfRows) {
+          @ForAll @IntRange(max = 100) int nrOfRows) {
     Relation first  = idOnly("rel", arity, nrOfRows, false);
     Relation second = idOnly("rel", arity, nrOfRows, false);
 
