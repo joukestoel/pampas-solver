@@ -1,9 +1,9 @@
 language: java
 
 before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -y
-  - sudo apt-get install gcc-4.9 -y
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test --yes
+  - sudo apt-get update -qq
+  - sudo apt-get install gcc-4.9 -qq
   - wget https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip
   - unzip z3-4.8.10-x64-ubuntu-18.04.zip
   - rm ./z3-4.8.10-x64-ubuntu-18.04.zip
